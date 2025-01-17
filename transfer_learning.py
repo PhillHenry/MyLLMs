@@ -1,12 +1,13 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from datasets import DatasetDict
+from transformers import AutoModelForCausalLM, AutoTokenizer, GPT2TokenizerFast
 from transformers import TrainingArguments, Trainer
-from datasets import load_dataset
 
 from Tokenize import INPUT_TOKENIZED_DATASET
-from config import model_name
+from config import MODEL_NAME
 
-model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenized_dataset = AutoTokenizer.from_pretrained(INPUT_TOKENIZED_DATASET)
+tokenized_dataset = DatasetDict.load_from_disk(INPUT_TOKENIZED_DATASET)
+#tokenized_dataset = GPT2TokenizerFast.from_pretrained(INPUT_TOKENIZED_DATASET)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 
 # Define training arguments
 training_args = TrainingArguments(
