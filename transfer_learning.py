@@ -2,20 +2,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import TrainingArguments, Trainer
 from datasets import load_dataset
 
+from Tokenize import INPUT_TOKENIZED_DATASET
+from config import model_name
 
-model_name = "gpt2"  # Replace with the model of your choice
-tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer.pad_token = tokenizer.eos_token
-
-# Load a dataset
-dataset = load_dataset("imdb")  # Replace "imdb" with your dataset
-
-# Tokenize the dataset
-def tokenize_function(examples):
-    return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=512)
-
-tokenized_dataset = dataset.map(tokenize_function, batched=True)
+tokenized_dataset = AutoTokenizer.from_pretrained(INPUT_TOKENIZED_DATASET)
 
 # Define training arguments
 training_args = TrainingArguments(
