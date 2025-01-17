@@ -15,9 +15,11 @@ def do_tokenization(model_name: str):
 
     # Tokenize the dataset
     def tokenize_function(examples):
-        return tokenizer(examples["text"], truncation=True, padding="max_length", max_length=512)
+        tokens = tokenizer(examples["text"], truncation=True, padding="max_length", max_length=128)
+        tokens["labels"] = tokens["input_ids"].copy()
+        return tokens
 
-    tokenized_dataset = dataset.map(tokenize_function, batched=True)
+    tokenized_dataset = dataset.map(tokenize_function, batched=True, remove_columns=["text"])
     tokenized_dataset.save_to_disk(INPUT_TOKENIZED_DATASET)
     return tokenized_dataset
 
