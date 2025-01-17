@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from transformers import AutoTokenizer, GPT2TokenizerFast, GPT2Tokenizer
+from transformers import GPT2Tokenizer
 
 from config import MODEL_NAME
 
