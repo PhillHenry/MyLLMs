@@ -3,12 +3,12 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers import AutoModelForCausalLM
 
 from Tokenize import INPUT_TOKENIZED_DATASET, tokenize
-from config import SAVED_MODEL, MODEL_NAME
+from config import SAVED_MODEL, MODEL_NAME, TOKENIZER_PATH
 
 
 def generate_text(model, tokenizer):
     # Input text
-    prompt = "Tell me about the James Bond film Skyfall"
+    prompt = "Is the James Bond film Skyfall good?"
 
     # Tokenize the input
     inputs = tokenizer(prompt, return_tensors="pt")
@@ -28,13 +28,21 @@ def generate_text(model, tokenizer):
     print(f"Generated text: {generated_text}")
 
 
-if __name__ == "__main__":
+def basse_model_text():
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+    generate_text(model, tokenizer)
+
+
+def transfer_model_text():
     # tokenizer = AutoTokenizer.from_pretrained(SAVED_MODEL)
     # tokenized_dataset = DatasetDict.load_from_disk(INPUT_TOKENIZED_DATASET)
-    # tokenizer = tokenized_dataset["train"]
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     # t = tokenize()
+    tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_PATH)
     imdb_model = AutoModelForCausalLM.from_pretrained(SAVED_MODEL)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
     generate_text(imdb_model, tokenizer)
-    generate_text(model, tokenizer)
+
+
+if __name__ == "__main__":
+    transfer_model_text()
+    basse_model_text()
