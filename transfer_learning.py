@@ -12,7 +12,7 @@ def do_training():
 
     # Define training arguments
     training_args = TrainingArguments(
-        output_dir="./results",
+        output_dir=f"./results_{MODEL_NAME}",
         eval_strategy="epoch",
         learning_rate=5e-5,
         fp16=True,
