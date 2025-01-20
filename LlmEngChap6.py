@@ -1,5 +1,8 @@
 from peft import LoraConfig, PeftModel
 from unsloth import PatchDPOTrainer
+
+from config import SAVED_MODEL
+
 PatchDPOTrainer()
 
 import os
@@ -11,7 +14,7 @@ from trl import DPOConfig, DPOTrainer
 from accelerate import init_empty_weights
 import peft
 
-max_seq_length = 16
+max_seq_length = 512
 model_name="mlabonne/TwinLlama-3.1-8B"
 bnb_config = BitsAndBytesConfig(
          load_in_4bit=True,
@@ -89,3 +92,5 @@ trainer = DPOTrainer(
         ),
     )
 trainer.train()
+model.save_pretrained(f"{SAVED_MODEL}/model_{model_name}")
+tokenizer.save_pretrained(f"{SAVED_MODEL}/tokenizer_{model_name}")
