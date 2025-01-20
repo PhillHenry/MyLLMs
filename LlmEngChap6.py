@@ -1,3 +1,4 @@
+from peft import LoraConfig, PeftModel
 from unsloth import PatchDPOTrainer
 PatchDPOTrainer()
 
@@ -8,10 +9,12 @@ from transformers import TrainingArguments, TextStreamer
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
 from accelerate import init_empty_weights
+import peft
 
-max_seq_length = 2048
+max_seq_length = 16
+model_name="mlabonne/TwinLlama-3.1-8B"
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="meta-llama/Llama-3.2-1B",
+    model_name=model_name,
     max_seq_length=max_seq_length,
     load_in_4bit=False,
 )
@@ -26,8 +29,7 @@ with init_empty_weights():
     )
 
     # model.to(torch.device("cuda"))
-    torch.nn.Module.to_empty(model, device=torch.device("cpu"))
-    model.to("cuda")
+    torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
 
 alpaca_template = """Below is an instruction that describes a task.
 Write a response that appropriately completes the request.
@@ -56,11 +58,12 @@ trainer = DPOTrainer(
     eval_dataset=dataset["test"],
     max_length=max_seq_length//2,
     max_prompt_length=max_seq_length//2,
+    max_completion_length=max_seq_length//2,
     args=DPOConfig(
         learning_rate=2e-6,
         lr_scheduler_type="linear",
-        per_device_train_batch_size=2,
-        per_device_eval_batch_size=2,
+        per_device_train_batch_size=1,
+        per_device_eval_batch_size=1,
         gradient_accumulation_steps=8,
         num_train_epochs=1,
         fp16=not is_bfloat16_supported(),
