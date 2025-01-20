@@ -7,21 +7,27 @@ from datasets import load_dataset
 from transformers import TrainingArguments, TextStreamer
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
+from accelerate import init_empty_weights
 
 max_seq_length = 2048
 model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="mlabonne/TwinLlama-3.1-8B",
+    model_name="meta-llama/Llama-3.2-1B",
     max_seq_length=max_seq_length,
     load_in_4bit=False,
 )
 
-model = FastLanguageModel.get_peft_model(
-    model,
-    r=32,
-    lora_alpha=32,
-    lora_dropout=0,
-    target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
-)
+with init_empty_weights():
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=32,
+        lora_alpha=32,
+        lora_dropout=0,
+        target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
+    )
+
+    # model.to(torch.device("cuda"))
+    torch.nn.Module.to_empty(model, device=torch.device("cpu"))
+    model.to("cuda")
 
 alpaca_template = """Below is an instruction that describes a task.
 Write a response that appropriately completes the request.
