@@ -5,7 +5,7 @@ PatchDPOTrainer()
 import os
 import torch
 from datasets import load_dataset
-from transformers import TrainingArguments, TextStreamer
+from transformers import TrainingArguments, TextStreamer, BitsAndBytesConfig
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
 from accelerate import init_empty_weights
@@ -13,10 +13,19 @@ import peft
 
 max_seq_length = 16
 model_name="mlabonne/TwinLlama-3.1-8B"
+bnb_config = BitsAndBytesConfig(
+         load_in_4bit=True,
+         llm_int8_threshold=6.0,
+         llm_int8_has_fp16_weight=False,
+         bnb_4bit_compute_dtype=torch.bfloat16,
+         bnb_4bit_use_double_quant=True,
+         bnb_4bit_quant_type="nf4",
+     )
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name=model_name,
     max_seq_length=max_seq_length,
     load_in_4bit=False,
+    quantization_config=bnb_config,
 )
 
 with init_empty_weights():
