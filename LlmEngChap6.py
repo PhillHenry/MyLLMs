@@ -32,8 +32,8 @@ class MyLlamaModel:
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.model_name,
             max_seq_length=self.max_seq_length,
-            load_in_4bit=False,
-            quantization_config=self.bnb_config,
+            load_in_4bit=True,
+            # quantization_config=self.bnb_config,
         )
         return model, tokenizer
 
@@ -74,9 +74,8 @@ class MyLlamaModel:
             beta=0.5,
             train_dataset=dataset["train"],
             eval_dataset=dataset["test"],
-            max_length=self.max_seq_length//2,
-            max_prompt_length=self.max_seq_length//2,
-            max_completion_length=self.max_seq_length//2,
+            max_length=self.max_seq_length // 2,
+            max_prompt_length=self.max_seq_length // 2,
             args=DPOConfig(
                 learning_rate=2e-6,
                 lr_scheduler_type="linear",
@@ -84,8 +83,8 @@ class MyLlamaModel:
                 per_device_eval_batch_size=1,
                 gradient_accumulation_steps=8,
                 num_train_epochs=1,
-                fp16=False,
-                bf16=True,
+                fp16= not is_bfloat16_supported(),
+                bf16=is_bfloat16_supported(),
                 optim="adamw_8bit",
                 weight_decay=0.01,
                 warmup_steps=10,
@@ -96,7 +95,7 @@ class MyLlamaModel:
                 report_to="comet_ml",
                 seed=0,
                 ),
-            )
+        )
         trainer.train()
         model.save_pretrained(self.model_path)
         tokenizer.save_pretrained(self.tokenizer_path)
