@@ -11,7 +11,6 @@ import torch
 
 model_name = "mlabonne/TwinLlama-3.1-8B"
 def basse_model_text():
-    max_seq_length = 512
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         llm_int8_threshold=6.0,
@@ -22,14 +21,14 @@ def basse_model_text():
     )
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=model_name,
-        max_seq_length=max_seq_length,
+        max_seq_length=MyLlamaModel.max_seq_length,
         load_in_4bit=False,
         quantization_config=bnb_config,
     )
     inputs = tokenizer(["Is the James Bond film Skyfall good?"], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
     FastLanguageModel.for_inference(model)
-    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=512, use_cache=True)
+    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
 
 
 def transfer_model_text():
