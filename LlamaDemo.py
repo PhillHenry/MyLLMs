@@ -1,14 +1,8 @@
-from accelerate import init_empty_weights
-from datasets import DatasetDict
-from peft import PeftModel
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, BitsAndBytesConfig, TextStreamer, LlamaModel
-from transformers import AutoModelForCausalLM
+from transformers import TextStreamer
 from unsloth import FastLanguageModel
 
 from LlmEngChap6 import MyLlamaModel
-from Tokenize import INPUT_TOKENIZED_DATASET, tokenize
-from config import SAVED_MODEL, MODEL_NAME, TOKENIZER_PATH
-import torch
+
 
 def basse_model_text():
     generate(MyLlamaModel.model_name)
