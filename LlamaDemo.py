@@ -18,36 +18,27 @@ def generate(model_name: str):
         model_name=MyLlamaModel.model_name,
         max_seq_length=MyLlamaModel.max_seq_length,
         load_in_4bit=True,
-        # quantization_config=self.bnb_config,
     )
     generate_text_using(model, tokenizer)
 
 
 def generate_text_using(model, tokenizer):
-    inputs = tokenizer(["Is the James Bond film Skyfall good?"], return_tensors="pt").to("cuda")
+    alpaca_template = """Below is an instruction that describes a task.
+        Write a response that appropriately completes the request.
+        ### Instruction:
+        {}
+        ### Response:
+        """
+    message = alpaca_template.format("""Write a paragraph to introduce
+        supervised
+        fine - tuning.
+        """, "")
+    inputs = tokenizer([message], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
     FastLanguageModel.for_inference(model)
     _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
 
 
-def transfer_model_text():
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=MyLlamaModel.model_name,
-        max_seq_length=MyLlamaModel.max_seq_length,
-        load_in_4bit=True,
-        # quantization_config=self.bnb_config,
-    )
-    model = PeftModel.from_pretrained(
-        model=model,
-        model_id=MyLlamaModel.model_path,
-    )
-    # tokenizer = AutoTokenizer.from_pretrained(MyLlamaModel.tokenizer_path)
-
-    # model.cuda()
-    generate_text_using(model, tokenizer)
-
-
 if __name__ == "__main__":
     generate(MyLlamaModel.model_path)
     # basse_model_text()
-    # transfer_model_text()

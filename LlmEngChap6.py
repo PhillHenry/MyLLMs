@@ -1,30 +1,19 @@
-from peft import LoraConfig, PeftModel
 from unsloth import PatchDPOTrainer
 
 from config import SAVED_MODEL
 
 PatchDPOTrainer()
 
-import os
 import torch
 from datasets import load_dataset
-from transformers import TrainingArguments, TextStreamer, BitsAndBytesConfig
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
 from accelerate import init_empty_weights
-import peft
+
 
 class MyLlamaModel:
     max_seq_length = 512
     model_name="mlabonne/TwinLlama-3.1-8B"
-    bnb_config = BitsAndBytesConfig(
-             load_in_4bit=True,
-             llm_int8_threshold=6.0,
-             llm_int8_has_fp16_weight=False,
-             bnb_4bit_compute_dtype=torch.bfloat16,
-             bnb_4bit_use_double_quant=True,
-             bnb_4bit_quant_type="nf4",
-         )
     model_path = f"{SAVED_MODEL}/model_{model_name}"
     tokenizer_path = f"{SAVED_MODEL}/tokenizer_{model_name}"
 
@@ -32,8 +21,8 @@ class MyLlamaModel:
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.model_name,
             max_seq_length=self.max_seq_length,
-            load_in_4bit=True,
-            # quantization_config=self.bnb_config,
+            load_in_4bit=True, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
+            # quantization_config=self.bnb_config, # helped with memory but caused non-zero probabilities when demoed
         )
         return model, tokenizer
 
