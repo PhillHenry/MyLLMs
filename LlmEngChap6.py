@@ -38,23 +38,7 @@ class MyLlamaModel:
             )
             torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
 
-        alpaca_template = """Below is an instruction that describes a task.
-        Write a response that appropriately completes the request.
-        ### Instruction:
-        {}
-        ### Response:
-        """
-        EOS_TOKEN = tokenizer.eos_token
-        def format_samples(example):
-            example["prompt"] = alpaca_template.format(example["prompt"])
-            example["chosen"] = example['chosen'] + EOS_TOKEN
-            example["rejected"] = example['rejected'] + EOS_TOKEN
-            return {"prompt": example["prompt"], "chosen":
-                example["chosen"], "rejected": example["rejected"]}
-
-        dataset = load_dataset("mlabonne/llmtwin-dpo", split="train")
-        dataset = dataset.map(format_samples)
-        dataset = dataset.train_test_split(test_size=0.05)
+        dataset = self.load_prepared_dataset(tokenizer.eos_token)
 
         trainer = DPOTrainer(
             model=model,
@@ -88,6 +72,27 @@ class MyLlamaModel:
         trainer.train()
         model.save_pretrained(self.model_path)
         tokenizer.save_pretrained(self.tokenizer_path)
+
+    def load_prepared_dataset(self, EOS_TOKEN):
+        alpaca_template = """Below is an instruction that describes a task.
+        Write a response that appropriately completes the request.
+        ### Instruction:
+        {}
+        ### Response:
+        """
+
+        def format_samples(example):
+            example["prompt"] = alpaca_template.format(example["prompt"])
+            example["chosen"] = example['chosen'] + EOS_TOKEN
+            example["rejected"] = example['rejected'] + EOS_TOKEN
+            return {"prompt": example["prompt"], "chosen":
+                example["chosen"], "rejected": example["rejected"]}
+
+        dataset = load_dataset("mlabonne/llmtwin-dpo", split="train")
+        dataset = dataset.map(format_samples)
+        dataset = dataset.train_test_split(test_size=0.05)
+        return dataset
+
 
 if __name__ == "__main__":
     my_model = MyLlamaModel()

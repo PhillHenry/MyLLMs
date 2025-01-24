@@ -23,9 +23,7 @@ def generate_text_using(model, tokenizer):
         {}
         ### Response:
         """
-    message = alpaca_template.format("""Write a paragraph to introduce
-        supervised
-        fine - tuning.
+    message = alpaca_template.format("""Write a paragraph to introduce zero shot learning
         """, "")
     inputs = tokenizer([message], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
