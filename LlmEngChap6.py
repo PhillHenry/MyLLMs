@@ -38,8 +38,10 @@ class MyLlamaModel:
             )
             torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
 
-        dataset = self.load_prepared_dataset(tokenizer.eos_token)
+        self.do_dpo(model, tokenizer)
 
+    def do_dpo(self, model, tokenizer):
+        dataset = self.load_prepared_dataset(tokenizer.eos_token)
         trainer = DPOTrainer(
             model=model,
             ref_model=None,
@@ -56,7 +58,7 @@ class MyLlamaModel:
                 per_device_eval_batch_size=1,
                 gradient_accumulation_steps=8,
                 num_train_epochs=1,
-                fp16= not is_bfloat16_supported(),
+                fp16=not is_bfloat16_supported(),
                 bf16=is_bfloat16_supported(),
                 optim="adamw_8bit",
                 weight_decay=0.01,
@@ -67,7 +69,7 @@ class MyLlamaModel:
                 logging_steps=1,
                 report_to="comet_ml",
                 seed=0,
-                ),
+            ),
         )
         trainer.train()
         model.save_pretrained(self.model_path)
