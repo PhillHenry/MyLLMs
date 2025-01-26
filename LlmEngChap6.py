@@ -1,5 +1,6 @@
+import comet_ml
 from unsloth import PatchDPOTrainer
-
+from accelerate import Accelerator
 from config import SAVED_MODEL
 
 PatchDPOTrainer()
@@ -23,6 +24,7 @@ class MyLlamaModel:
             max_seq_length=self.max_seq_length,
             load_in_4bit=True, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
             # quantization_config=self.bnb_config, # helped with memory but caused non-zero probabilities when demoed
+            # device_map="auto", # try this
         )
         return model, tokenizer
 
@@ -37,8 +39,12 @@ class MyLlamaModel:
                 target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
             )
             torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
+            accelerator = Accelerator(mixed_precision="fp16", cpu=True)  # Enable mixed precision for memory efficiency
+            device = accelerator.device
 
-        self.do_dpo(model, tokenizer)
+            # Move the model to the appropriate device
+            model = accelerator.prepare(model)
+            self.do_dpo(model, tokenizer)
 
     def do_dpo(self, model, tokenizer):
         dataset = self.load_prepared_dataset(tokenizer.eos_token)
@@ -57,7 +63,7 @@ class MyLlamaModel:
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
                 gradient_accumulation_steps=8,
-                num_train_epochs=1,
+                num_train_epochs=2,
                 fp16=not is_bfloat16_supported(),
                 bf16=is_bfloat16_supported(),
                 optim="adamw_8bit",
