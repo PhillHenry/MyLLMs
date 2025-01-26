@@ -15,7 +15,9 @@ from accelerate import init_empty_weights
 class MyLlamaModel:
     max_seq_length = 512
     model_name="mlabonne/TwinLlama-3.1-8B"
-    model_path = f"{SAVED_MODEL}/model_{model_name}"
+    NUM_TRAIN_EPOCHS = 2
+    device_map = "auto"
+    model_path = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_{model_name}"
     tokenizer_path = f"{SAVED_MODEL}/tokenizer_{model_name}"
 
     def get_model_tokenizer(self):
@@ -24,7 +26,7 @@ class MyLlamaModel:
             max_seq_length=self.max_seq_length,
             load_in_4bit=True, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
             # quantization_config=self.bnb_config, # helped with memory but caused non-zero probabilities when demoed
-            # device_map="auto", # try this
+            device_map=self.device_map, # try this
         )
         return model, tokenizer
 
@@ -63,7 +65,7 @@ class MyLlamaModel:
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
                 gradient_accumulation_steps=8,
-                num_train_epochs=2,
+                num_train_epochs=self.NUM_TRAIN_EPOCHS,
                 fp16=not is_bfloat16_supported(),
                 bf16=is_bfloat16_supported(),
                 optim="adamw_8bit",
@@ -81,7 +83,8 @@ class MyLlamaModel:
         model.save_pretrained(self.model_path)
         tokenizer.save_pretrained(self.tokenizer_path)
 
-    def load_prepared_dataset(self, EOS_TOKEN):
+    @staticmethod
+    def load_prepared_dataset(eos_token):
         alpaca_template = """Below is an instruction that describes a task.
         Write a response that appropriately completes the request.
         ### Instruction:
@@ -91,8 +94,8 @@ class MyLlamaModel:
 
         def format_samples(example):
             example["prompt"] = alpaca_template.format(example["prompt"])
-            example["chosen"] = example['chosen'] + EOS_TOKEN
-            example["rejected"] = example['rejected'] + EOS_TOKEN
+            example["chosen"] = example['chosen'] + eos_token
+            example["rejected"] = example['rejected'] + eos_token
             return {"prompt": example["prompt"], "chosen":
                 example["chosen"], "rejected": example["rejected"]}
 

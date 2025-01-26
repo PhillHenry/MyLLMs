@@ -1,7 +1,9 @@
+from accelerate import Accelerator
 from transformers import TextStreamer
 from unsloth import FastLanguageModel
 
 from LlmEngChap6 import MyLlamaModel
+import sys
 
 
 def basse_model_text():
@@ -13,6 +15,8 @@ def generate(model_name: str):
         max_seq_length=MyLlamaModel.max_seq_length,
         load_in_4bit=True,
     )
+    accelerator = Accelerator(mixed_precision="fp16", cpu=True)  # Enable mixed precision for memory efficiency
+    model = accelerator.prepare(model)
     generate_text_using(model, tokenizer)
 
 
@@ -32,5 +36,9 @@ def generate_text_using(model, tokenizer):
 
 
 if __name__ == "__main__":
-    generate(MyLlamaModel.model_path)
+    if len(sys.argv) == 0:
+        path = MyLlamaModel.model_path
+    else:
+        path = sys.argv[1]
+    generate(path)
     # basse_model_text()
