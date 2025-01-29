@@ -1,4 +1,5 @@
 import comet_ml
+from transformers import BitsAndBytesConfig
 from unsloth import PatchDPOTrainer
 from accelerate import Accelerator
 from config import SAVED_MODEL
@@ -9,24 +10,30 @@ import torch
 from datasets import load_dataset
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
-from accelerate import init_empty_weights
+from accelerate import init_empty_weights, cpu_offload
+from torch.optim import AdamW
+
 
 
 class MyLlamaModel:
     max_seq_length = 512
-    model_name="mlabonne/TwinLlama-3.1-8B"
-    NUM_TRAIN_EPOCHS = 2
+    # model_name="meta-llama/Llama-3.3-70B-Instruct"
+    model_name="unsloth/Llama-3.2-1B-Instruct"
+    NUM_TRAIN_EPOCHS = 1
+    LOAD_IN_4BIT = True
     device_map = "auto"
-    model_path = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_{model_name}"
-    tokenizer_path = f"{SAVED_MODEL}/tokenizer_{model_name}"
+    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}/"
+    model_path = f"{base_output_dir}/{model_name.lower()}.pt"
+    tokenizer_path = f"{base_output_dir}/tokenizer_{model_name.lower()}.pt"
 
     def get_model_tokenizer(self):
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.model_name,
-            max_seq_length=self.max_seq_length,
-            load_in_4bit=True, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
-            # quantization_config=self.bnb_config, # helped with memory but caused non-zero probabilities when demoed
-            device_map=self.device_map, # try this
+            # max_seq_length=self.max_seq_length,
+            # # load_in_4bit=self.LOAD_IN_4BIT, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
+            # quantization_config=bnb_config, # helped with memory but caused non-zero probabilities when demoed
+            # # device_map=self.device_map, # try this
+            # trust_remote_code=True,
         )
         return model, tokenizer
 
@@ -41,8 +48,10 @@ class MyLlamaModel:
                 target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
             )
             torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
-            accelerator = Accelerator(mixed_precision="fp16", cpu=True)  # Enable mixed precision for memory efficiency
+            accelerator = Accelerator(mixed_precision="bf16", cpu=True)  # Enable mixed precision for memory efficiency
             device = accelerator.device
+            # model.to(device)
+            # optimizer = AdamW(params=model.parameters(), lr=3e-2)
 
             # Move the model to the appropriate device
             model = accelerator.prepare(model)
@@ -68,7 +77,6 @@ class MyLlamaModel:
                 num_train_epochs=self.NUM_TRAIN_EPOCHS,
                 fp16=not is_bfloat16_supported(),
                 bf16=is_bfloat16_supported(),
-                optim="adamw_8bit",
                 weight_decay=0.01,
                 warmup_steps=10,
                 output_dir="output",
