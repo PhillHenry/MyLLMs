@@ -8,14 +8,11 @@ import torch
 
 
 def generate(model: MyLlamaModel):
-    print("Generating text for " + model.model_name)
+    model_name = model.model_path
+    print("Generating text for " + model_name)
     model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name=model.model_name,
+        model_name=model_name,
         load_in_4bit=model.LOAD_IN_4BIT,
-        # dtype=torch.bfloat16
-        # max_seq_length=MyLlamaModel.max_seq_length,
-        # pretrained_model_name_or_path=model_name
-        # load_in_4bit=True,
     )
     # accelerator = Accelerator(mixed_precision="fp16", cpu=True)  # Enable mixed precision for memory efficiency
     # model = accelerator.prepare(model)
@@ -29,7 +26,7 @@ def generate(model: MyLlamaModel):
 def generate_text_using(model, tokenizer):
     print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
     #"pt",  "tf",  "np", "jax", "mlx"
-    inputs = tokenizer(["""Write a paragraph to introduce zero shot learning"""], return_tensors="pt").to("cuda")
+    inputs = tokenizer(["""What is one of the topics covered by Paul Iusztin related to LLMs?"""], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
     FastLanguageModel.for_inference(model)
     _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
@@ -43,4 +40,3 @@ if __name__ == "__main__":
         path = sys.argv[1]
         model, tokenizer = FastLanguageModel.from_pretrained(model_name=path)
         generate_text_using(model, tokenizer)
-    # basse_model_text()
