@@ -88,8 +88,7 @@ class MyLlamaModel:
             ),
         )
         trainer.train()
-        model.save_pretrained(self.model_path)
-        tokenizer.save_pretrained(self.tokenizer_path)
+        model.save_pretrained_merged(self.model_path, tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
 
     @staticmethod
     def load_prepared_dataset(eos_token):
