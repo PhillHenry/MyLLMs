@@ -17,20 +17,19 @@ from torch.optim import AdamW
 
 class MyLlamaModel:
     max_seq_length = 512
-    # model_name="meta-llama/Llama-3.3-70B-Instruct"
     model_name="unsloth/Llama-3.2-1B-Instruct"
     NUM_TRAIN_EPOCHS = 1
-    LOAD_IN_4BIT = True
+    LOAD_IN_4BIT = False
     device_map = "auto"
-    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}/"
-    model_path = f"{base_output_dir}/{model_name.lower()}.pt"
-    tokenizer_path = f"{base_output_dir}/tokenizer_{model_name.lower()}.pt"
+    save_method = "lora"
+    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}/"
+    model_path = f"{base_output_dir}/{model_name}"
 
     def get_model_tokenizer(self):
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.model_name,
             # max_seq_length=self.max_seq_length,
-            # # load_in_4bit=self.LOAD_IN_4BIT, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
+            load_in_4bit=self.LOAD_IN_4BIT, # "You can activate QLoRA by setting load_in_4bit to True"  LLMEngineering, p251
             # quantization_config=bnb_config, # helped with memory but caused non-zero probabilities when demoed
             # # device_map=self.device_map, # try this
             # trust_remote_code=True,
@@ -88,7 +87,7 @@ class MyLlamaModel:
             ),
         )
         trainer.train()
-        model.save_pretrained_merged(self.model_path, tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+        model.save_pretrained_merged(self.model_path, tokenizer=tokenizer, save_method=self.save_method) # merged_4bit_forced
 
     @staticmethod
     def load_prepared_dataset(eos_token):
