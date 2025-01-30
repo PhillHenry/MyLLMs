@@ -1,6 +1,6 @@
 import comet_ml
 from unsloth import PatchDPOTrainer
-
+from accelerate import Accelerator
 from config import SAVED_MODEL
 
 PatchDPOTrainer()
