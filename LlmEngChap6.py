@@ -19,12 +19,14 @@ class MyLlamaModel:
     max_seq_length = 512
     model_name="unsloth/Llama-3.2-1B-Instruct"
     NUM_TRAIN_EPOCHS = 4
-    beta = 0.1
+    beta = 0.5
     LOAD_IN_4BIT = False
     device_map = "auto"
     save_method = "lora"
-    lora_dropout = 0.1
-    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}/"
+    lora_dropout = 0.
+    lora_alpha = 64
+    r = 64
+    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}/"
     model_path = f"{base_output_dir}/{model_name}"
 
     def get_model_tokenizer(self):
@@ -43,8 +45,8 @@ class MyLlamaModel:
         with init_empty_weights():
             model = FastLanguageModel.get_peft_model(
                 model,
-                r=32,
-                lora_alpha=32,
+                r=self.r,
+                lora_alpha=self.lora_alpha,
                 lora_dropout=self.lora_dropout,
                 target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
             )
