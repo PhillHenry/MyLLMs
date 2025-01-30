@@ -1,4 +1,4 @@
-from unsloth import PatchDPOTrainer
+import comet_ml
 from unsloth import PatchDPOTrainer
 
 from config import SAVED_MODEL
