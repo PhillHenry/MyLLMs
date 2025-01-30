@@ -26,7 +26,7 @@ def generate(model: MyLlamaModel):
 def generate_text_using(model, tokenizer):
     print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
     #"pt",  "tf",  "np", "jax", "mlx"
-    inputs = tokenizer(["""What is one of the topics covered by Paul Iusztin related to LLMs?"""], return_tensors="pt").to("cuda")
+    inputs = tokenizer(["Who are the creators of the course that is under the 'Decoding ML' umbrella?"], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
     FastLanguageModel.for_inference(model)
     _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
