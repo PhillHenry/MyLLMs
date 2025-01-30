@@ -6,6 +6,7 @@ from config import SAVED_MODEL
 PatchDPOTrainer()
 
 import torch
+from transformers import TextStreamer, AutoTokenizer
 from datasets import load_dataset
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
@@ -14,16 +15,17 @@ from accelerate import init_empty_weights
 
 class MyLlamaModel:
     max_seq_length = 512
-    model_name="unsloth/Llama-3.2-1B-Instruct"
-    NUM_TRAIN_EPOCHS = 4
+    model_name="unsloth/Llama-3.2-3B-Instruct"
+    NUM_TRAIN_EPOCHS = 2
     beta = 0.5
-    LOAD_IN_4BIT = False
+    LOAD_IN_4BIT = True
     device_map = "auto"
     save_method = "lora"
     lora_dropout = 0.
-    lora_alpha = 64
-    r = 64
-    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}/"
+    lora_alpha = 32
+    learning_rate=2e-3
+    r = 32
+    base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}_lr{learning_rate}/"
     model_path = f"{base_output_dir}/{model_name}"
 
     def get_model_tokenizer(self):
@@ -69,7 +71,7 @@ class MyLlamaModel:
             max_length=self.max_seq_length // 2,
             max_prompt_length=self.max_seq_length // 2,
             args=DPOConfig(
-                learning_rate=2e-6,
+                learning_rate=self.learning_rate,
                 lr_scheduler_type="linear",
                 per_device_train_batch_size=1,
                 per_device_eval_batch_size=1,
@@ -89,6 +91,8 @@ class MyLlamaModel:
         )
         trainer.train()
         model.save_pretrained_merged(self.model_path, tokenizer=tokenizer, save_method=self.save_method) # merged_4bit_forced
+        generate_text_using(model, tokenizer)
+
 
     @staticmethod
     def load_prepared_dataset(eos_token):
@@ -110,6 +114,15 @@ class MyLlamaModel:
         dataset = dataset.map(format_samples)
         dataset = dataset.train_test_split(test_size=0.05)
         return dataset
+
+
+def generate_text_using(model, tokenizer):
+    print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
+    #"pt",  "tf",  "np", "jax", "mlx"
+    inputs = tokenizer(["Who are the creators of the course that is under the 'Decoding ML' umbrella?"], return_tensors="pt").to("cuda")
+    text_streamer = TextStreamer(tokenizer)
+    FastLanguageModel.for_inference(model)
+    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
 
 
 if __name__ == "__main__":
