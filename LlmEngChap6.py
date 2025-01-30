@@ -1,7 +1,6 @@
-import comet_ml
-from transformers import BitsAndBytesConfig
 from unsloth import PatchDPOTrainer
-from accelerate import Accelerator
+from unsloth import PatchDPOTrainer
+
 from config import SAVED_MODEL
 
 PatchDPOTrainer()
@@ -10,9 +9,7 @@ import torch
 from datasets import load_dataset
 from unsloth import FastLanguageModel, is_bfloat16_supported
 from trl import DPOConfig, DPOTrainer
-from accelerate import init_empty_weights, cpu_offload
-from torch.optim import AdamW
-
+from accelerate import init_empty_weights
 
 
 class MyLlamaModel:
