@@ -14,7 +14,7 @@ from accelerate import init_empty_weights
 
 
 class MyLlamaModel:
-    max_seq_length = 512
+    max_seq_length = 1024
     model_name="unsloth/Llama-3.2-3B-Instruct"
     NUM_TRAIN_EPOCHS = 2
     beta = 0.5
@@ -23,7 +23,7 @@ class MyLlamaModel:
     save_method = "lora"
     lora_dropout = 0.
     lora_alpha = 32
-    learning_rate=2e-3
+    learning_rate=2e-5
     r = 32
     base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}_lr{learning_rate}/"
     model_path = f"{base_output_dir}/{model_name}"
