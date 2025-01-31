@@ -14,13 +14,13 @@ from accelerate import init_empty_weights
 
 
 class MyLlamaModel:
-    max_seq_length = 1024
+    max_seq_length = 256
     model_name="unsloth/Llama-3.2-3B-Instruct"
     NUM_TRAIN_EPOCHS = 2
     beta = 0.5
-    LOAD_IN_4BIT = True
+    LOAD_IN_4BIT = False
     device_map = "auto"
-    save_method = "lora"
+    save_method = "lora"  # merged_X just means the whole model is saved, not just the transformer
     lora_dropout = 0.
     lora_alpha = 32
     learning_rate=2e-5
