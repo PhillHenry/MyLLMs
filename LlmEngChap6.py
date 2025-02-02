@@ -15,8 +15,7 @@ from accelerate import init_empty_weights
 
 class MyLlamaModel:
     max_seq_length = 256
-    model_name="unsloth/Llama-3.2-3B-Instruct"
-    NUM_TRAIN_EPOCHS = 2
+    NUM_TRAIN_EPOCHS = 6
     beta = 0.5
     LOAD_IN_4BIT = False
     device_map = "auto"
@@ -26,9 +25,15 @@ class MyLlamaModel:
     learning_rate=2e-5
     r = 32
     base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}_lr{learning_rate}/"
-    model_path = f"{base_output_dir}/{model_name}"
 
-    def get_model_tokenizer(self):
+    def __init__(self):
+        self.model_name="unsloth/Llama-3.2-3B-Instruct"
+        self.model_path = f"{self.base_output_dir}/{self.model_name}"
+
+    def get_model_tokenizer(self, model_name: str):
+        print(f"Using model {model_name}")
+        self.model_name = model_name
+        self.model_path = f"{self.base_output_dir}/{model_name}"
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=self.model_name,
             # max_seq_length=self.max_seq_length,
@@ -40,7 +45,7 @@ class MyLlamaModel:
         return model, tokenizer
 
     def train_and_save(self):
-        model, tokenizer = self.get_model_tokenizer()
+        model, tokenizer = self.get_model_tokenizer(self.model_name)
         with init_empty_weights():
             model = FastLanguageModel.get_peft_model(
                 model,
