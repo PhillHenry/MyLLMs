@@ -16,8 +16,9 @@ load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False
 
 
 def main(tokenization_fn):
+    model_name = "unsloth/zephyr-sft-bnb-4bit"
     model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name = "unsloth/zephyr-sft-bnb-4bit", # Choose ANY! eg mistralai/Mistral-7B-Instruct-v0.2
+        model_name =model_name, # Choose ANY! eg mistralai/Mistral-7B-Instruct-v0.2
         max_seq_length = max_seq_length,
         dtype = dtype,
         load_in_4bit = load_in_4bit,
@@ -26,18 +27,17 @@ def main(tokenization_fn):
 
     raw_datasets = tokenization_fn(tokenizer)
 
-    import pprint
-    row = raw_datasets["train"][8]
-    pprint.pprint(row["prompt"])
-    pprint.pprint(row["chosen"])
-    pprint.pprint(row["rejected"])
+    print_sample(raw_datasets, "train")
+    print_sample(raw_datasets, "test")
 
+    r = 64
+    lora_alpha = 64
     model = FastLanguageModel.get_peft_model(
         model,
-        r = 64, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+        r =r, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                           "gate_proj", "up_proj", "down_proj",],
-        lora_alpha = 64,
+        lora_alpha =lora_alpha,
         lora_dropout = 0, # Currently only supports dropout = 0
         bias = "none",    # Currently only supports bias = "none"
         # [NEW] "unsloth" uses 30% less VRAM, fits 2x larger batch sizes!
@@ -54,6 +54,7 @@ def main(tokenization_fn):
     from trl import DPOTrainer, DPOConfig
     from unsloth import is_bfloat16_supported
 
+    num_epochs = 1
     dpo_trainer = DPOTrainer(
         model = model,
         ref_model = None,
@@ -61,7 +62,7 @@ def main(tokenization_fn):
             per_device_train_batch_size = 1,
             gradient_accumulation_steps = 4,
             warmup_ratio = 0.1,
-            num_train_epochs = 3,
+            num_train_epochs =num_epochs,
             learning_rate = 5e-6,
             fp16 = not is_bfloat16_supported(),
             bf16 = is_bfloat16_supported(),
@@ -83,7 +84,15 @@ def main(tokenization_fn):
 
     dpo_trainer.train()
 
-    model.save_pretrained_merged(f"{SAVED_MODEL}/my_dpo", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+
+
+def print_sample(raw_datasets, train_or_test):
+    import pprint
+    row = raw_datasets[train_or_test][8]
+    pprint.pprint(row["prompt"])
+    pprint.pprint(row["chosen"])
+    pprint.pprint(row["rejected"])
 
 
 def ultrafeedback_tokenize_fn():
@@ -113,13 +122,13 @@ def labonne_tokenize_fn():
             return {"prompt": actual_prompt, "chosen": chosen, "rejected": rejected}
 
         dataset = dataset.map(format_samples)
+        dataset = dataset.train_test_split(test_size=0.05)
         dataset = dataset.map(
             apply_chat_template,
             fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
             num_proc=12,
             desc="Formatting comparisons with prompt template",
         )
-        dataset = dataset.train_test_split(test_size=0.05)
         return dataset
     return do_tokenization
 
