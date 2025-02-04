@@ -33,7 +33,8 @@ def main(tokenization_fn):
     lora_alpha = 32
     learning_rate = 2e-6
     r = 32
-    num_epochs = 1
+    num_epochs = 2
+    beta = 0.5
 
     model = FastLanguageModel.get_peft_model(
         model,
@@ -76,7 +77,7 @@ def main(tokenization_fn):
             output_dir = "outputs",
             report_to = "comet_ml", # Use this for WandB etc
         ),
-        beta = 0.1,
+        beta = beta,
         train_dataset = raw_datasets["train"],
         # eval_dataset = raw_datasets["test"],
         tokenizer = tokenizer,
@@ -86,7 +87,7 @@ def main(tokenization_fn):
 
     dpo_trainer.train()
 
-    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}_lr{learning_rate}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}_lr{learning_rate}_beta{beta}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
 
 
 def print_sample(raw_datasets, train_or_test):
