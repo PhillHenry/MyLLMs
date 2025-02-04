@@ -4,7 +4,7 @@
 from unsloth import PatchDPOTrainer
 
 from config import SAVED_MODEL
-from preparation import get_datasets, to_dpo
+from preparation import get_datasets, to_dpo_format
 
 PatchDPOTrainer()
 
@@ -15,7 +15,7 @@ dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for
 load_in_4bit = True # Use 4bit quantization to reduce memory usage. Can be False.
 
 
-def main(data_model):
+def main(tokenization_fn):
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name = "unsloth/zephyr-sft-bnb-4bit", # Choose ANY! eg mistralai/Mistral-7B-Instruct-v0.2
         max_seq_length = max_seq_length,
@@ -24,18 +24,7 @@ def main(data_model):
         # token = "hf_...", # use one if using gated models like meta-llama/Llama-2-7b-hf
     )
 
-    raw_datasets = get_datasets(
-        {data_model: 0.005}, # 0.5% sampled
-        splits = ["train_prefs", "test_prefs"],
-    )
-
-    raw_datasets = to_dpo(raw_datasets, tokenizer)
-
-    # Replace column names with what TRL needs, text_chosen -> chosen and text_rejected -> rejected
-    for split in ["train", "test"]:
-        raw_datasets[split] = raw_datasets[split].rename_columns(
-            {"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
-        )
+    raw_datasets = tokenization_fn(tokenizer)
 
     import pprint
     row = raw_datasets["train"][8]
@@ -94,8 +83,26 @@ def main(data_model):
 
     dpo_trainer.train()
 
-    model.save_pretrained_merged(f"{SAVED_MODEL}/{data_model}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+    model.save_pretrained_merged(f"{SAVED_MODEL}/my_dpo", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+
+
+def ultrafeedback_tokenize_fn():
+    data_model = "HuggingFaceH4/ultrafeedback_binarized"
+    def do_tokenization(tokenizer):
+        raw_datasets = get_datasets(
+            {data_model: 0.005},  # 0.5% sampled
+            splits=["train_prefs", "test_prefs"],
+        )
+        raw_datasets = to_dpo_format(raw_datasets, tokenizer)
+        # Replace column names with what TRL needs, text_chosen -> chosen and text_rejected -> rejected
+        for split in ["train", "test"]:
+            raw_datasets[split] = raw_datasets[split].rename_columns(
+                {"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
+            )
+        return raw_datasets
+
+    return do_tokenization
 
 
 if __name__ == "__main__":
-    main("HuggingFaceH4/ultrafeedback_binarized")
+    main(ultrafeedback_tokenize_fn())

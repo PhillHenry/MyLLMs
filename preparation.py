@@ -165,7 +165,7 @@ def mix_datasets(dataset_mixer: dict, splits: Optional[List[str]] = None, shuffl
     return raw_datasets
 
 
-def to_dpo(raw_datasets, tokenizer):
+def to_dpo_format(raw_datasets, tokenizer):
     column_names = list(raw_datasets["train"].features)
 
     return raw_datasets.map(
