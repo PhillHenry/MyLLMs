@@ -1,5 +1,7 @@
 # From https://colab.research.google.com/drive/15vttTpzzVXv_tJwEk-hIcQ0S9FcEWvwP?usp=sharing#scrollTo=E8-BWi7MzkRz
 
+import comet_ml
+
 # One must patch the DPO Trainer first!
 from unsloth import PatchDPOTrainer
 
@@ -243,7 +245,7 @@ dpo_trainer = DPOTrainer(
     model = model,
     ref_model = None,
     args = DPOConfig(
-        per_device_train_batch_size = 2,
+        per_device_train_batch_size = 1,
         gradient_accumulation_steps = 4,
         warmup_ratio = 0.1,
         num_train_epochs = 3,
@@ -256,7 +258,7 @@ dpo_trainer = DPOTrainer(
         lr_scheduler_type = "linear",
         seed = 42,
         output_dir = "outputs",
-        report_to = "none", # Use this for WandB etc
+        report_to = "comet_ml", # Use this for WandB etc
     ),
     beta = 0.1,
     train_dataset = raw_datasets["train"],
