@@ -89,6 +89,7 @@ def main(tokenization_fn):
 
 def print_sample(raw_datasets, train_or_test):
     import pprint
+    print(f"\nsample {train_or_test}")
     row = raw_datasets[train_or_test][8]
     pprint.pprint(row["prompt"])
     pprint.pprint(row["chosen"])
@@ -118,17 +119,24 @@ def labonne_tokenize_fn():
         def format_samples(example):
             actual_prompt = example['prompt']
             chosen = [{"content": actual_prompt, "role": "user"}, {"content": example['chosen'], "role": "assistant"}]
+            messages = [{"content": actual_prompt, "role": "user"}, {"content": example['chosen'], "role": "assistant"}]
             rejected = [{"content": actual_prompt, "role": "user"}, {"content": example['rejected'], "role": "assistant"}]
-            return {"prompt": actual_prompt, "chosen": chosen, "rejected": rejected}
+            return {"prompt": actual_prompt, "chosen": chosen, "rejected": rejected, "messages": messages}
 
         dataset = dataset.map(format_samples)
         dataset = dataset.train_test_split(test_size=0.05)
+        column_names = list(dataset["train"].features)
         dataset = dataset.map(
             apply_chat_template,
             fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
             num_proc=12,
+            remove_columns=column_names,
             desc="Formatting comparisons with prompt template",
         )
+        for split in ["train", "test"]:
+            dataset[split] = dataset[split].rename_columns(
+                {"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
+            )
         return dataset
     return do_tokenization
 
