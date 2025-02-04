@@ -1,10 +1,10 @@
 # From https://colab.research.google.com/drive/15vttTpzzVXv_tJwEk-hIcQ0S9FcEWvwP?usp=sharing#scrollTo=E8-BWi7MzkRz
-
+from datasets import load_dataset
 # One must patch the DPO Trainer first!
 from unsloth import PatchDPOTrainer
 
 from config import SAVED_MODEL
-from preparation import get_datasets, to_dpo_format
+from preparation import get_datasets, to_dpo_format, apply_chat_template
 
 PatchDPOTrainer()
 
@@ -103,6 +103,25 @@ def ultrafeedback_tokenize_fn():
 
     return do_tokenization
 
+def labonne_tokenize_fn():
+    def do_tokenization(tokenizer):
+        dataset = load_dataset("mlabonne/llmtwin-dpo", split="train")
+        def format_samples(example):
+            actual_prompt = example['prompt']
+            chosen = [{"content": actual_prompt, "role": "user"}, {"content": example['chosen'], "role": "assistant"}]
+            rejected = [{"content": actual_prompt, "role": "user"}, {"content": example['rejected'], "role": "assistant"}]
+            return {"prompt": actual_prompt, "chosen": chosen, "rejected": rejected}
+
+        dataset = dataset.map(format_samples)
+        dataset = dataset.map(
+            apply_chat_template,
+            fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
+            num_proc=12,
+            desc="Formatting comparisons with prompt template",
+        )
+        dataset = dataset.train_test_split(test_size=0.05)
+        return dataset
+    return do_tokenization
 
 if __name__ == "__main__":
-    main(ultrafeedback_tokenize_fn())
+    main(labonne_tokenize_fn())
