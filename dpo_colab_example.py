@@ -1,6 +1,6 @@
 # From https://colab.research.google.com/drive/15vttTpzzVXv_tJwEk-hIcQ0S9FcEWvwP?usp=sharing#scrollTo=E8-BWi7MzkRz
+import comet_ml
 from datasets import load_dataset
-# One must patch the DPO Trainer first!
 from unsloth import PatchDPOTrainer
 
 from config import SAVED_MODEL
@@ -30,8 +30,11 @@ def main(tokenization_fn):
     print_sample(raw_datasets, "train")
     print_sample(raw_datasets, "test")
 
-    r = 64
-    lora_alpha = 64
+    lora_alpha = 32
+    learning_rate = 2e-6
+    r = 32
+    num_epochs = 1
+
     model = FastLanguageModel.get_peft_model(
         model,
         r =r, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
@@ -54,7 +57,6 @@ def main(tokenization_fn):
     from trl import DPOTrainer, DPOConfig
     from unsloth import is_bfloat16_supported
 
-    num_epochs = 1
     dpo_trainer = DPOTrainer(
         model = model,
         ref_model = None,
@@ -63,7 +65,7 @@ def main(tokenization_fn):
             gradient_accumulation_steps = 4,
             warmup_ratio = 0.1,
             num_train_epochs =num_epochs,
-            learning_rate = 5e-6,
+            learning_rate = learning_rate,
             fp16 = not is_bfloat16_supported(),
             bf16 = is_bfloat16_supported(),
             logging_steps = 1,
@@ -84,7 +86,7 @@ def main(tokenization_fn):
 
     dpo_trainer.train()
 
-    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}_lr{learning_rate}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
 
 
 def print_sample(raw_datasets, train_or_test):
