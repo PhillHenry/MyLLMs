@@ -15,19 +15,19 @@ from accelerate import init_empty_weights
 
 class MyLlamaModel:
     max_seq_length = 256
-    NUM_TRAIN_EPOCHS = 6
+    NUM_TRAIN_EPOCHS = 3
     beta = 0.5
     LOAD_IN_4BIT = False
     device_map = "auto"
     save_method = "lora"  # merged_X just means the whole model is saved, not just the transformer
     lora_dropout = 0.
     lora_alpha = 32
-    learning_rate=2e-5
+    learning_rate=2e-6
     r = 32
     base_output_dir = f"{SAVED_MODEL}/{max_seq_length}maxSeqLen_{NUM_TRAIN_EPOCHS}Epochs_{device_map}devmap_4Bit{LOAD_IN_4BIT}_{save_method}_beta{beta}_loraDropout{lora_dropout}_r{r}_lora_alpha{lora_alpha}_lr{learning_rate}/"
 
     def __init__(self):
-        self.model_name="unsloth/Llama-3.2-3B-Instruct"
+        self.model_name="unsloth/Llama-3.2-3B-Instruct"  # "unsloth/Llama-3.1-Storm-8B-bnb-4bit"
         self.model_path = f"{self.base_output_dir}/{self.model_name}"
 
     def get_model_tokenizer(self, model_name: str):
@@ -96,20 +96,22 @@ class MyLlamaModel:
         )
         trainer.train()
         model.save_pretrained_merged(self.model_path, tokenizer=tokenizer, save_method=self.save_method) # merged_4bit_forced
-        generate_text_using(model, tokenizer)
+        # generate_text_using(model, tokenizer)
 
 
     @staticmethod
     def load_prepared_dataset(eos_token):
-        alpaca_template = """Below is an instruction that describes a task.
-        Write a response that appropriately completes the request.
-        ### Instruction:
-        {}
-        ### Response:
-        """
+        template = (
+        "<|begin_of_text|>\n"
+        "<|system|>\nYou are a helpful assistant.\n"
+        "<|user|>\n{prompt}\n"
+        "<|assistant|>\n{chosen_response}\n"
+        "<|assistant_rejected|>\n{rejected_response}\n"
+        "<|end_of_text|>"
+    )
 
         def format_samples(example):
-            example["prompt"] = alpaca_template.format(example["prompt"])
+            example["prompt"] = template.format(prompt=example["prompt"], chosen_response=example["chosen"], rejected_response=example["rejected"])
             example["chosen"] = example['chosen'] + eos_token
             example["rejected"] = example['rejected'] + eos_token
             return {"prompt": example["prompt"], "chosen":
