@@ -33,7 +33,7 @@ def generate_text_using(model, tokenizer):
 
 
 if __name__ == "__main__":
-    # Eg, python LlamaDemo.py unsloth/Llama-3.2-1B-Instruct
+    # Eg, python LlamaDemo.py mlabonne/TwinLlama-3.1-8B-DPO # the actual artifact
     if len(sys.argv) == 1:
         generate(MyLlamaModel())
     else:
