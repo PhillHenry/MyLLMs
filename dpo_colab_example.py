@@ -34,7 +34,7 @@ def main(tokenization_fn):
     learning_rate = 2e-6
     r = 32
     num_epochs = 1
-    beta = 0.5
+    beta = 0.75
 
     model = FastLanguageModel.get_peft_model(
         model,
