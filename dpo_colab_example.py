@@ -30,9 +30,9 @@ def main(tokenization_fn):
     print_sample(raw_datasets, "train")
     print_sample(raw_datasets, "test")
 
-    lora_alpha = 32
+    lora_alpha = 64
     learning_rate = 2e-6
-    r = 32
+    r = 64
     num_epochs = 1
     beta = 0.1
 
