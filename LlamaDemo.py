@@ -2,7 +2,7 @@ from accelerate import Accelerator
 from transformers import TextStreamer, AutoTokenizer
 from unsloth import FastLanguageModel
 
-from LlmEngChap6 import MyLlamaModel, generate_text_using
+from LlmEngChap6 import MyLlamaModel
 import sys
 import torch
 
@@ -21,6 +21,15 @@ def generate(model: MyLlamaModel):
     #     pretrained_model_name_or_path=model_name
     # )
     generate_text_using(model, tokenizer)
+
+
+def generate_text_using(model, tokenizer):
+    print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
+    #"pt",  "tf",  "np", "jax", "mlx"
+    inputs = tokenizer(["Who are the creators of the course that is under the 'Decoding ML' umbrella?"], return_tensors="pt").to("cuda")
+    text_streamer = TextStreamer(tokenizer)
+    FastLanguageModel.for_inference(model)
+    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
 
 
 if __name__ == "__main__":

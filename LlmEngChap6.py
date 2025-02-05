@@ -123,15 +123,6 @@ class MyLlamaModel:
         return dataset
 
 
-def generate_text_using(model, tokenizer):
-    print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
-    #"pt",  "tf",  "np", "jax", "mlx"
-    inputs = tokenizer(["Who are the creators of the course that is under the 'Decoding ML' umbrella?"], return_tensors="pt").to("cuda")
-    text_streamer = TextStreamer(tokenizer)
-    FastLanguageModel.for_inference(model)
-    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
-
-
 if __name__ == "__main__":
     my_model = MyLlamaModel()
     my_model.train_and_save()
