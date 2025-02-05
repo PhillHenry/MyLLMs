@@ -60,33 +60,33 @@ def main(tokenization_fn):
 
     eval_strategy = "steps"
     dpo_trainer = DPOTrainer(
-        model = model,
-        ref_model = None,
+        model=model,
+        ref_model=None,
+        tokenizer=tokenizer,
+        beta=beta,
+        train_dataset=raw_datasets["train"],
         eval_dataset=raw_datasets["test"],
+        max_length=1024,
+        max_prompt_length=1024,
         args = DPOConfig(
+            learning_rate=learning_rate,
+            lr_scheduler_type="linear",
             per_device_train_batch_size = 1,
+            per_device_eval_batch_size=1,
             gradient_accumulation_steps = 8,
-            warmup_ratio = 0.1,
             num_train_epochs =num_epochs,
-            learning_rate = learning_rate,
-            fp16 = not is_bfloat16_supported(),
-            bf16 = is_bfloat16_supported(),
-            logging_steps = 1,
-            optim = "adamw_8bit",
-            weight_decay = 0.01,
-            eval_strategy=eval_strategy, # needs an eval_dataset if using "steps"
+            fp16=not is_bfloat16_supported(),
+            bf16=is_bfloat16_supported(),
+            weight_decay=0.01,
+            warmup_steps=10,
+            output_dir="outputs",
+            eval_strategy=eval_strategy,  # needs an eval_dataset if using "steps"
             eval_steps=0.2,
-            lr_scheduler_type = "linear",
-            seed = 42,
-            output_dir = "outputs",
+            logging_steps = 1,
+            # optim = "adamw_8bit",
             report_to = "comet_ml", # Use this for WandB etc
+            seed=42,
         ),
-        beta = beta,
-        train_dataset = raw_datasets["train"],
-        # eval_dataset = raw_datasets["test"],
-        tokenizer = tokenizer,
-        max_length = 1024,
-        max_prompt_length = 1024,
     )
 
     dpo_trainer.train()
