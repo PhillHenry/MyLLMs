@@ -33,7 +33,7 @@ def main(tokenization_fn):
     lora_alpha = 32
     learning_rate = 2e-6
     r = 32
-    num_epochs = 2
+    num_epochs = 1
     beta = 0.5
 
     model = FastLanguageModel.get_peft_model(
