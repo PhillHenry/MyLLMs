@@ -35,8 +35,10 @@ def generate_text_using(model, tokenizer):
 if __name__ == "__main__":
     # Eg, python LlamaDemo.py mlabonne/TwinLlama-3.1-8B-DPO # the actual artifact
     if len(sys.argv) == 1:
+        print("Using default model")
         generate(MyLlamaModel())
     else:
         path = sys.argv[1]
+        print(f"using {path}")
         model, tokenizer = FastLanguageModel.from_pretrained(model_name=path)
         generate_text_using(model, tokenizer)
