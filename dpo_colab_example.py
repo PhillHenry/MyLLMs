@@ -33,7 +33,7 @@ def main(tokenization_fn):
     lora_alpha = 32
     learning_rate = 2e-6
     r = 32
-    num_epochs = 2
+    num_epochs = 3
     beta = 0.5
 
     model = FastLanguageModel.get_peft_model(
@@ -58,12 +58,14 @@ def main(tokenization_fn):
     from trl import DPOTrainer, DPOConfig
     from unsloth import is_bfloat16_supported
 
+    eval_strategy = "steps"
     dpo_trainer = DPOTrainer(
         model = model,
         ref_model = None,
+        eval_dataset=raw_datasets["test"],
         args = DPOConfig(
             per_device_train_batch_size = 1,
-            gradient_accumulation_steps = 4,
+            gradient_accumulation_steps = 8,
             warmup_ratio = 0.1,
             num_train_epochs =num_epochs,
             learning_rate = learning_rate,
@@ -71,7 +73,9 @@ def main(tokenization_fn):
             bf16 = is_bfloat16_supported(),
             logging_steps = 1,
             optim = "adamw_8bit",
-            weight_decay = 0.0,
+            weight_decay = 0.01,
+            eval_strategy=eval_strategy, # needs an eval_dataset if using "steps"
+            eval_steps=0.2,
             lr_scheduler_type = "linear",
             seed = 42,
             output_dir = "outputs",
@@ -82,12 +86,12 @@ def main(tokenization_fn):
         # eval_dataset = raw_datasets["test"],
         tokenizer = tokenizer,
         max_length = 1024,
-        max_prompt_length = 512,
+        max_prompt_length = 1024,
     )
 
     dpo_trainer.train()
 
-    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}_lr{learning_rate}_beta{beta}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
+    model.save_pretrained_merged(f"{SAVED_MODEL}/r{r}_loraAlpha{lora_alpha}_epochs{num_epochs}_lr{learning_rate}_beta{beta}_eval_strategy{eval_strategy}/{model_name}", tokenizer=tokenizer, save_method="lora") # merged_4bit_forced
 
 
 def print_sample(raw_datasets, train_or_test):
