@@ -54,7 +54,8 @@ class MyLlamaModel:
                 lora_dropout=self.lora_dropout,
                 target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj", "o_proj", "gate_proj"],
             )
-            torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
+            # this appears to blatt the model. The solution is to import tensorflow. See https://stackoverflow.com/questions/78683011/keras-3-custom-loss-function-to-mask-nan
+            # torch.nn.Module.to_empty(model, device=torch.device("cuda"))  # this eliminates 'NotImplementedError: Cannot copy out of meta tensor'
             accelerator = Accelerator(mixed_precision="bf16", cpu=True)  # Enable mixed precision for memory efficiency
             device = accelerator.device
             # model.to(device)
