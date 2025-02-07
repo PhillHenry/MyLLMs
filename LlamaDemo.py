@@ -6,6 +6,8 @@ from LlmEngChap6 import MyLlamaModel
 import sys
 import torch
 
+QUESTION = "Who are the creators of the course that is under the 'Decoding ML' umbrella?"
+
 
 def generate(model: MyLlamaModel):
     model_name = model.model_path
@@ -26,10 +28,23 @@ def generate(model: MyLlamaModel):
 def generate_text_using(model, tokenizer):
     print(f"Model of type {type(model)}, tokenizer of type {type(tokenizer)}")
     #"pt",  "tf",  "np", "jax", "mlx"
-    inputs = tokenizer(["Who are the creators of the course that is under the 'Decoding ML' umbrella?"], return_tensors="pt").to("cuda")
+    inputs = tokenizer([QUESTION], return_tensors="pt").to("cuda")
     text_streamer = TextStreamer(tokenizer)
     FastLanguageModel.for_inference(model)
     _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
+
+def generate_answer(question, model, tokenizer, max_new_tokens=100):
+    inputs = tokenizer(question, return_tensors="pt").to(model.device)
+
+    output = model.generate(
+        **inputs,
+        max_new_tokens=max_new_tokens,
+        do_sample=True,  # Use sampling for diversity
+        temperature=0.1,  # Adjust creativity
+        top_p=0.9,  # Nucleus sampling
+    )
+
+    return tokenizer.decode(output[0], skip_special_tokens=True)
 
 
 if __name__ == "__main__":
@@ -40,5 +55,6 @@ if __name__ == "__main__":
     else:
         path = sys.argv[1]
         print(f"using {path}")
-        model, tokenizer = FastLanguageModel.from_pretrained(model_name=path)
-        generate_text_using(model, tokenizer)
+        model, tokenizer = FastLanguageModel.from_pretrained(path)
+        FastLanguageModel.for_inference(model)
+        print(generate_answer(QUESTION, model, tokenizer))
