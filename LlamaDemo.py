@@ -33,18 +33,24 @@ def generate_text_using(model, tokenizer):
     FastLanguageModel.for_inference(model)
     _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens=MyLlamaModel.max_seq_length, use_cache=True)
 
-def generate_answer(question, model, tokenizer, max_new_tokens=100):
+def generate_answer(question, model, tokenizer, max_new_tokens=512):
     inputs = tokenizer(question, return_tensors="pt").to(model.device)
 
     output = model.generate(
         **inputs,
         max_new_tokens=max_new_tokens,
         do_sample=True,  # Use sampling for diversity
-        temperature=0.1,  # Adjust creativity
+        temperature=0.7,  # Adjust creativity
         top_p=0.9,  # Nucleus sampling
     )
 
     return tokenizer.decode(output[0], skip_special_tokens=True)
+
+
+def generate_text_from_book(message, model, tokenizer):
+    inputs = tokenizer([message], return_tensors="pt").to("cuda")
+    text_streamer = TextStreamer(tokenizer)
+    _ = model.generate(**inputs, streamer=text_streamer, max_new_tokens = 256, use_cache = True)
 
 
 if __name__ == "__main__":
@@ -57,4 +63,5 @@ if __name__ == "__main__":
         print(f"using {path}")
         model, tokenizer = FastLanguageModel.from_pretrained(path)
         FastLanguageModel.for_inference(model)
-        print(generate_answer(QUESTION, model, tokenizer))
+        # print(generate_answer(QUESTION, model, tokenizer))
+        generate_text_from_book(QUESTION, model, tokenizer)

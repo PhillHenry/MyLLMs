@@ -13,7 +13,7 @@ pipeline = transformers.pipeline(
 
 messages = [
     {"role": "system", "content": "You are an expert trained on healthcare and biomedical domain!"},
-    {"role": "user", "content": "What are the differential diagnoses for a patient presenting with shortness of breath and chest pain?"},
+    {"role": "user", "content": "Do the following ICD10 codes represent blood cancer: L01.0, L4.1, C00.0, D57.1"},
 ]
 
 prompt = pipeline.tokenizer.apply_chat_template(
@@ -29,7 +29,7 @@ terminators = [
 
 outputs = pipeline(
     prompt,
-    max_new_tokens=256,
+    max_new_tokens=1024,
     eos_token_id=terminators,
     do_sample=True,
     temperature=0.6,
