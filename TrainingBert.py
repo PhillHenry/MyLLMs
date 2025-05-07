@@ -1,11 +1,13 @@
 import comet_ml
 
+
+from config import SAVED_MODEL
+
 comet_ml.init(api_key="wfYwSiDlqTHVyTWHjAuT6qI0P")
 
 
 from transformers import BertTokenizer, BertForSequenceClassification
 
-from LlmEngChap6 import MyLlamaModel
 
 
 
@@ -31,6 +33,8 @@ val_loader = DataLoader(tokenized_dataset['test'], batch_size=8)
 
 
 from transformers import Trainer, TrainingArguments
+from datetime import datetime
+
 
 training_args = TrainingArguments(
     output_dir='./results',
@@ -49,9 +53,15 @@ trainer = Trainer(
     eval_dataset=tokenized_dataset['test'],
 )
 
+timestamp = datetime.now().strftime('%y%m%d%H%M')
+model_path = f"{SAVED_MODEL}/{timestamp}/{model_name}"
+print(f"Will train model and save it to {model_path}")
 trainer.train()
 
 #model_path = f"{MyLlamaModel.base_output_dir}/{model_name}"
-model_path = f"{MyLlamaModel.base_output_dir}/"
+
 model.save_pretrained(model_path)
+tokenizer.save_pretrained(f"{model_path}_tokenizer")
+tokenizer.save_vocabulary(f"{model_path}_vocab")
 #model.save_pretrained_merged(model_path, tokenizer=tokenizer) # merged_4bit_forced
+print("finished")
