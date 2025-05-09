@@ -1,3 +1,4 @@
+from datasets import load_dataset
 from transformers import (
     BertTokenizerFast,
     BertConfig,
@@ -6,18 +7,13 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
-from datasets import load_dataset
-import os
-from datasets import load_dataset
-from pathlib import Path
 
-MY_CORPUS = "my_training_data.txt"
+from BertPreTrainTokenizer import MY_VOCAB
 
-# path = str(Path("my_corpus.txt").resolve())
-# dataset = load_dataset("text", data_files={"train": path})
+MY_CORPUS = "my_training_data.txt"  # or whatever file was output by CreateICD10Sentances.py
 
 # ========= 1. Train or load a tokenizer =========
-tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
+tokenizer = BertTokenizerFast.from_pretrained(MY_VOCAB)
 
 # ========= 2. Load and tokenize your text dataset =========
 dataset = load_dataset("text", data_files={"train": MY_CORPUS})

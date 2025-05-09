@@ -1,6 +1,7 @@
 from tokenizers.implementations import BertWordPieceTokenizer
 
 MY_CORPUS = "my_training_data.txt"
+MY_VOCAB = "./tokenizer-output"
 
 # 1. Train tokenizer on your corpus
 tokenizer = BertWordPieceTokenizer(
@@ -19,4 +20,5 @@ tokenizer.train(
 )
 
 # 2. Save it
-tokenizer.save_model("/tmp/")
+tokenizer.save_model(MY_VOCAB)
+tokenizer.save(f"{MY_VOCAB}/tokenizer.json")
