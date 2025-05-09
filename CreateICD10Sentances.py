@@ -8,7 +8,7 @@ OUTPUT_FILE = "/tmp/training_data.txt"
 
 def random_codes(codes: {str}) -> str:
     line = ""
-    for i in range(int(random.random() * 20) + 1):
+    for i in range(int(random.random() * 20) + 20):
         line += f" {random.choice(codes)}"
     return line.strip()
 

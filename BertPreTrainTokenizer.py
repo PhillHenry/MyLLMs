@@ -1,4 +1,7 @@
 from tokenizers.implementations import BertWordPieceTokenizer
+import os
+
+from utils import ensure_unique_dir
 
 MY_CORPUS = "my_training_data.txt"
 MY_VOCAB = "./tokenizer-output"
@@ -20,5 +23,6 @@ tokenizer.train(
 )
 
 # 2. Save it
+ensure_unique_dir(MY_VOCAB)
 tokenizer.save_model(MY_VOCAB)
 tokenizer.save(f"{MY_VOCAB}/tokenizer.json")
