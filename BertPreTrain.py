@@ -11,6 +11,8 @@ import os
 from datasets import load_dataset
 from pathlib import Path
 
+MY_CORPUS = "my_training_data.txt"
+
 # path = str(Path("my_corpus.txt").resolve())
 # dataset = load_dataset("text", data_files={"train": path})
 
@@ -18,7 +20,7 @@ from pathlib import Path
 tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
 
 # ========= 2. Load and tokenize your text dataset =========
-dataset = load_dataset("text", data_files={"train": "my_training_data.txt"})
+dataset = load_dataset("text", data_files={"train": MY_CORPUS})
 
 def tokenize_function(examples):
     return tokenizer(examples["text"], return_special_tokens_mask=True)
@@ -63,7 +65,6 @@ data_collator = DataCollatorForLanguageModeling(
 training_args = TrainingArguments(
     output_dir="./bert-pretrained",
     overwrite_output_dir=True,
-    # evaluation_strategy="no",
     per_device_train_batch_size=16,
     num_train_epochs=3,
     save_steps=500,
