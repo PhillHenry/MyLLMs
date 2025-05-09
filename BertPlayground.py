@@ -8,7 +8,7 @@ def next_token(model):
 
 def play_with_bert():
     # a pre-trained model from HuggingFace
-    model_name = "bert-pretrained"
+    model_name = "./bert-pretrained"
     next_token(model_name)
 
 

@@ -9,6 +9,9 @@ from transformers import (
 )
 
 from BertPreTrainTokenizer import MY_VOCAB
+from utils import ensure_unique_dir
+
+SAVE_DIRECTORY = "./bert-pretrained"
 
 MY_CORPUS = "my_training_data.txt"  # or whatever file was output by CreateICD10Sentances.py
 
@@ -55,7 +58,7 @@ model = BertForMaskedLM(config)
 
 # ========= 5. MLM data collator =========
 data_collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer, mlm=True, mlm_probability=0.15
+    tokenizer=tokenizer, mlm=True, mlm_probability=0.1
 )
 
 # ========= 6. Training arguments =========
@@ -63,7 +66,7 @@ training_args = TrainingArguments(
     output_dir="./bert-pretrained",
     overwrite_output_dir=True,
     per_device_train_batch_size=8,
-    num_train_epochs=3,
+    num_train_epochs=1,
     save_steps=500,
     save_total_limit=2,
     logging_steps=100,
@@ -82,5 +85,6 @@ trainer = Trainer(
 trainer.train()
 
 # ========= 8. Save final model and tokenizer =========
-model.save_pretrained("./bert-pretrained")
-tokenizer.save_pretrained("./bert-pretrained")
+ensure_unique_dir(SAVE_DIRECTORY)
+model.save_pretrained(SAVE_DIRECTORY)
+tokenizer.save_pretrained(SAVE_DIRECTORY)
