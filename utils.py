@@ -15,5 +15,3 @@ def ensure_unique_dir(path):
     os.makedirs(path, exist_ok=True)
     print(f"Created directory: {path}")
 
-# Example usage
-ensure_unique_dir("my_output")

@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 
-OUTPUT_FILE = "/tmp/training_data.txt"
+from BertConfig import MY_CORPUS
 
 
 def random_codes(codes: {str}) -> str:
@@ -15,7 +15,7 @@ def random_codes(codes: {str}) -> str:
 
 def generate_icd10s(n: int, filename: str):
     codes = codes_from(filename)
-    with open(OUTPUT_FILE, "w") as f:
+    with open(MY_CORPUS, "w") as f:
         for _ in range(n):
             f.write(f"{random_codes(codes)}\n")
 
@@ -32,7 +32,7 @@ def codes_from(filename):
 if __name__ == "__main__":
     n = 100000
     print(f"""
-    Outputs {n} rows of ICD-10 sentences and writes them to {OUTPUT_FILE}
+    Outputs {n} rows of ICD-10 sentences and writes them to {MY_CORPUS}
     
     Expect one argument: full path to an Excel spreadsheet with ICD10 codes with the column "CODE".
     I got mine from https://www.cms.gov/files/document/valid-icd-10-list.xlsx

@@ -1,10 +1,7 @@
 from tokenizers.implementations import BertWordPieceTokenizer
-import os
 
+from BertConfig import MY_VOCAB, MY_CORPUS
 from utils import ensure_unique_dir
-
-MY_CORPUS = "my_training_data.txt"
-MY_VOCAB = "./tokenizer-output"
 
 # 1. Train tokenizer on your corpus
 tokenizer = BertWordPieceTokenizer(

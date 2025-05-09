@@ -1,5 +1,7 @@
 from transformers import pipeline
 
+from BertConfig import SAVE_DIRECTORY
+
 
 def next_token(model):
     unmasker = pipeline('fill-mask', model=model)
@@ -8,8 +10,7 @@ def next_token(model):
 
 def play_with_bert():
     # a pre-trained model from HuggingFace
-    model_name = "./bert-pretrained"
-    next_token(model_name)
+    next_token(SAVE_DIRECTORY)
 
 
 if __name__ == "__main__":

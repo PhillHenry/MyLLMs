@@ -8,12 +8,8 @@ from transformers import (
     TrainingArguments,
 )
 
-from BertPreTrainTokenizer import MY_VOCAB
+from BertConfig import SAVE_DIRECTORY, MY_CORPUS, MY_VOCAB
 from utils import ensure_unique_dir
-
-SAVE_DIRECTORY = "./bert-pretrained"
-
-MY_CORPUS = "my_training_data.txt"  # or whatever file was output by CreateICD10Sentances.py
 
 # ========= 1. Train or load a tokenizer =========
 tokenizer = BertTokenizerFast.from_pretrained(MY_VOCAB)
