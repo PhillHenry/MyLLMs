@@ -40,11 +40,12 @@ def group_texts(examples):
 lm_dataset = tokenized.map(group_texts, batched=True)
 
 # ========= 4. Create the model config and model =========
-size = 12 * 20
+num_attention_heads = 12
+size = num_attention_heads * 20
 config = BertConfig(
     vocab_size=tokenizer.vocab_size,
     max_position_embeddings=size,
-    num_attention_heads=12,
+    num_attention_heads=num_attention_heads,
     num_hidden_layers=6,
     type_vocab_size=2,
     hidden_size=size,
