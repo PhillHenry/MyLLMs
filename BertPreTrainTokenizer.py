@@ -13,7 +13,7 @@ tokenizer = BertWordPieceTokenizer(
 
 tokenizer.train(
     files=MY_CORPUS,
-    vocab_size=30522,  # standard BERT vocab size
+    vocab_size=2**17,
     min_frequency=2,
     limit_alphabet=1000,
     special_tokens=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"]

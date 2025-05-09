@@ -7,3 +7,4 @@ datasets==3.2.0
 unsloth @ git+https://github.com/unslothai/unsloth.git@bdf0cd6033595be4e7ed23d0d002bb176d343152
 unsloth_zoo==2025.1.5
 comet-ml==3.47.6
+openpyxl
