@@ -1,26 +1,38 @@
 import random
 import sys
+from typing import Union
 
+import numpy as np
 import pandas as pd
 
-from BertConfig import MY_CORPUS
+from BertConfig import MY_CORPUS, MY_RESULTS
 
 
-def random_codes(codes: {str}) -> str:
+def random_codes(codes: {str}) -> Union[str, bool]:
     line = ""
+    is_diabetes = False
     for i in range(int(random.random() * 20) + 20):
-        line += f" {random.choice(codes)}"
-    return line.strip()
+        code = random.choice(codes)
+        line += f" {code}"
+        if code.startswith("E0"):
+            is_diabetes = True
+    return line.strip(), is_diabetes
 
 
 def generate_icd10s(n: int, filename: str):
     codes = codes_from(filename)
+    diabetes = np.zeros(n)
     with open(MY_CORPUS, "w") as f:
-        for _ in range(n):
-            f.write(f"{random_codes(codes)}\n")
+        for i in range(n):
+            line, is_diabetes = random_codes(codes)
+            if is_diabetes:
+                diabetes[i] = 1
+            f.write(f"{line}\n")
+    diabetes = pd.DataFrame(diabetes)
+    diabetes.to_csv(MY_RESULTS, index=False, header=False)
 
 
-def codes_from(filename):
+def codes_from(filename: str):
     df = pd.read_excel(filename)
     codes = list(df["CODE"])
     codes = filter(lambda x: len(x.strip()) > 0, codes)
