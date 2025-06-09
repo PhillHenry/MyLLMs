@@ -8,7 +8,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from BertConfig import SAVE_DIRECTORY, MY_CORPUS, MY_VOCAB
+from BertConfig import SAVE_DIRECTORY, MY_CORPUS, MY_VOCAB, bert_config
 from utils import ensure_unique_dir
 
 # ========= 1. Train or load a tokenizer =========
@@ -39,18 +39,7 @@ def group_texts(examples):
 lm_dataset = tokenized.map(group_texts, batched=True)
 
 # ========= 4. Create the model config and model =========
-num_attention_heads = 12
-size = num_attention_heads * 20
-config = BertConfig(
-    vocab_size=tokenizer.vocab_size,
-    max_position_embeddings=size,
-    num_attention_heads=num_attention_heads,
-    num_hidden_layers=6,
-    type_vocab_size=2,
-    hidden_size=size,
-    intermediate_size=2048,
-)
-model = BertForMaskedLM(config)
+model = BertForMaskedLM(bert_config(tokenizer))
 
 # ========= 5. MLM data collator =========
 data_collator = DataCollatorForLanguageModeling(
@@ -59,7 +48,7 @@ data_collator = DataCollatorForLanguageModeling(
 
 # ========= 6. Training arguments =========
 training_args = TrainingArguments(
-    output_dir="./bert-pretrained",
+    output_dir=SAVE_DIRECTORY,
     overwrite_output_dir=True,
     per_device_train_batch_size=8,
     num_train_epochs=1,
