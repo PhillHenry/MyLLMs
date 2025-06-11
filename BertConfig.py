@@ -20,3 +20,14 @@ def bert_config(tokenizer: BertTokenizerFast):
         hidden_size=size,
         intermediate_size=2048,
     )
+
+block_size = 128
+
+def group_texts(examples):
+    concatenated = {k: sum(examples[k], []) for k in examples.keys()}
+    total_length = (len(concatenated["input_ids"]) // block_size) * block_size
+    result = {
+        k: [t[i : i + block_size] for i in range(0, total_length, block_size)]
+        for k, t in concatenated.items()
+    }
+    return result
