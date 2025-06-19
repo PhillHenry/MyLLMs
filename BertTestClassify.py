@@ -48,7 +48,7 @@ def test_with_label(label: int) -> pd.DataFrame:
     cohort = df[df[LABEL] == label]
     print(f"Number with label {label} = {cohort.shape[0]} / {len(df)}")
     cohort = cohort.sample(frac=1).reset_index(drop=True)
-    samples = cohort[TEXT_COL][:10]
+    samples = cohort[TEXT_COL][:50]
     samples = samples.tolist()
     sense_check_sample(samples, label)
     if label == 1:

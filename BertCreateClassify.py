@@ -10,6 +10,9 @@ from BertUtils import TEXT_COL, tokenize_dataset, get_data_set, MODEL_FILE_NAME,
 
 ds = get_data_set()
 
+comet_ml.login()
+exp = comet_ml.start()
+
 print("Training Tokenizer....")
 tokenizer = BertWordPieceTokenizer(clean_text=True)
 tokenizer.train_from_iterator(ds[TEXT_COL])
@@ -55,3 +58,5 @@ print(f"Saved {TRAIN_FILE_NAME}")
 
 test_ds.save_to_disk(TEST_FILE_NAME)
 print(f"Saved {TEST_FILE_NAME}")
+
+exp.end()
