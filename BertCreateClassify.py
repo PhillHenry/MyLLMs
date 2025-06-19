@@ -28,7 +28,7 @@ training_args = TrainingArguments(
     eval_strategy="epoch",
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    num_train_epochs=1,
+    num_train_epochs=10,
     logging_dir='./logs',
     report_to="comet_ml",
 )
@@ -47,3 +47,5 @@ trainer = Trainer(
 trainer.train()
 
 model.save_pretrained(MODEL_FILE_NAME)
+
+print(f"Saved {MODEL_FILE_NAME}")

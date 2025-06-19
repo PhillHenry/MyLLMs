@@ -30,11 +30,18 @@ def tokenize_dataset(df: pd.DataFrame, tokenizer: BertTokenizerFast):
     print("Tokenizing....")
 
     def tokenize(batch):
-        tokens = tokenizer(batch[TEXT_COL], padding="max_length", truncation=True, max_length=200)
-        print(len(tokens["input_ids"][0]))
+        tokens = tokenizer(batch[TEXT_COL],
+                           padding="max_length",
+                           truncation=True,
+                           # truncation_strategy="do_not_truncate",
+                           max_length=240
+                           )
+        print(f"Length of input_ids = {len(tokens['input_ids'][0])}")
         tokens[LABEL] = batch[LABEL]
         return tokens
 
-    tokenized_dataset = df.map(tokenize, batched=True, remove_columns=[TEXT_COL],
+    tokenized_dataset = df.map(tokenize,
+                               batched=True,
+                               remove_columns=[TEXT_COL],
                                load_from_cache_file=False)
     return tokenized_dataset
