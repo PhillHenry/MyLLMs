@@ -38,10 +38,20 @@ def make_prediction(texts):
     return list(map(lambda x: x.item(), predictions))
 
 
+def remove_diabetes(codes: str) -> str:
+    codes = codes.split(" ")
+    return " ".join([code for code in codes if not code.startswith("E0")])
+
+
 def test_with_label(label: int) -> pd.DataFrame:
     cohort = df[df[LABEL] == label]
+    cohort = cohort.sample(frac=1).reset_index(drop=True)
     samples = cohort[TEXT_COL][:10]
     samples = samples.tolist()
+    sense_check_sample(samples, label)
+    if label == 1:
+        samples = list(map(remove_diabetes, samples))
+        sense_check_sample(samples, 0)
     predictions = make_prediction(samples)
     print(f"Label {label}: accuracy = {len([x for x in predictions if x == label])} / {len(samples)}")
     return samples
@@ -61,7 +71,3 @@ def sense_check_sample(sample: [str], expected: int):
 
 diabetics = test_with_label(1)
 non_diabetics = test_with_label(0)
-
-sense_check_sample(diabetics, 1)
-sense_check_sample(non_diabetics, 0)
-
