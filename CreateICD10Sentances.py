@@ -8,13 +8,50 @@ import pandas as pd
 from BertConfig import MY_CORPUS, MY_RESULTS
 
 
+COMORBIDITIES = [
+    "E6601", # obesity
+    "H5450", # visual
+    "H5451",
+    "H54511A",
+    "H54512A",
+    "H5452",
+    "H5452A1",
+    "H5452A2",
+    "H5460",
+    "H5461",
+    "H5462",
+    "H547",
+    "R0689", # vision
+    "R069",
+    "R0781",
+    "T524X1A", # ketones
+    "T524X1D",
+    "T524X1S",
+    "T524X2A",
+    "T524X2D",
+    "T524X2S",
+    "T524X3A",
+    "T524X3D",
+    "T524X3S",
+    "T524X4A",
+    "T524X4D",
+    "T524X4S",
+]
+
 def random_codes(codes: {str}) -> Union[str, bool]:
     line = ""
     is_diabetes = False
     for i in range(int(random.random() * 20) + 20):
         code = random.choice(codes)
         line += f" {code}"
-        if code.startswith("E0"):
+        if code.startswith("E0") or code.startswith("E1"):
+            is_diabetes = True
+            N = min(1, len(COMORBIDITIES) / 2)  # Ensure we don't try to pick more than available
+            k = random.randint(1, N)  # Random number of elements to pick
+            random_comorbidities = set(random.sample(COMORBIDITIES, k))
+            line + " ".join(random_comorbidities)
+        if code in COMORBIDITIES:
+            line += " E1010"
             is_diabetes = True
     return line.strip(), is_diabetes
 
@@ -42,7 +79,7 @@ def codes_from(filename: str):
 
 
 if __name__ == "__main__":
-    n = 100000
+    n = 4_000
     print(f"""
     Outputs {n} rows of ICD-10 sentences and writes them to {MY_CORPUS}
     
