@@ -9,7 +9,7 @@ MY_RESULTS = "my_training_results.txt"
 MY_VOCAB = "./tokenizer-output"
 
 def bert_config(tokenizer: BertTokenizerFast):
-    num_attention_heads = 20
+    num_attention_heads = 32
     size = num_attention_heads * 20
     return BertConfig(
         vocab_size=tokenizer.vocab_size,

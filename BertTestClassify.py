@@ -4,7 +4,7 @@ from transformers import BertTokenizerFast, BertForSequenceClassification
 
 from BertConfig import MY_VOCAB
 from BertUtils import tokenize_dataset, get_data_set, get_data_frame, MODEL_FILE_NAME, LABEL, \
-    TEXT_COL, TEST_FILE_NAME
+    TEXT_COL, TEST_FILE_NAME, is_diabetes
 import torch
 
 tokenizer = BertTokenizerFast.from_pretrained(MY_VOCAB)
@@ -38,7 +38,7 @@ def make_prediction(texts):
 
 def remove_diabetes(codes: str) -> str:
     codes = codes.split(" ")
-    return " ".join([code for code in codes if not (code.startswith("E0") or code.startswith("E1"))])
+    return " ".join([code for code in codes if not is_diabetes(code)])
 
 
 print(f"Loading {TEST_FILE_NAME}")
@@ -61,11 +61,11 @@ def test_with_label(label: int) -> pd.DataFrame:
 
 
 def sense_check_sample(sample: [str], expected: int):
-    print(f"Checking {len(sample)} samples have class {expected}")
+    # print(f"Checking {len(sample)} samples have class {expected}")
     for codes in sample:
         is_diabetic = False
         for code in codes.split(" "):
-            if code.startswith("E0") or code.startswith("E1"):
+            if is_diabetes(code):
                 is_diabetic = True
         if expected == 1:
             assert is_diabetic

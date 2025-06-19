@@ -49,3 +49,7 @@ def tokenize_dataset(df: Dataset, tokenizer: BertTokenizerFast, remove_columns=[
                                remove_columns=remove_columns,
                                load_from_cache_file=False)
     return tokenized_dataset
+
+
+def is_diabetes(code):
+    return code.startswith("E0") or code.startswith("E1")

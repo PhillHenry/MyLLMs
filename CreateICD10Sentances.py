@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from BertConfig import MY_CORPUS, MY_RESULTS
-
+from BertUtils import is_diabetes
 
 COMORBIDITIES = [
     "E6601", # obesity
@@ -40,20 +40,22 @@ COMORBIDITIES = [
 
 def random_codes(codes: {str}) -> Union[str, bool]:
     line = ""
-    is_diabetes = False
+    diabetic = False
     for i in range(int(random.random() * 20) + 20):
         code = random.choice(codes)
-        line += f" {code}"
-        if code.startswith("E0") or code.startswith("E1") and not is_diabetes:
-            is_diabetes = True
+        if is_diabetes(code) and not diabetic:
+            diabetic = True
             N = min(1, len(COMORBIDITIES) / 2)  # Ensure we don't try to pick more than available
             k = random.randint(1, N)  # Random number of elements to pick
             random_comorbidities = set(random.sample(COMORBIDITIES, k))
+            line = f"{code} {line}"
             line + " ".join(random_comorbidities)
-        if code in COMORBIDITIES and not is_diabetes:
+        elif code in COMORBIDITIES and not diabetic:
             line = "E1010 " + line
-            is_diabetes = True
-    return line.strip(), is_diabetes
+            diabetic = True
+        else:
+            line += f" {code}"
+    return line.strip(), diabetic
 
 
 def generate_icd10s(n: int, filename: str):
@@ -81,7 +83,7 @@ def codes_from(filename: str):
 
 
 if __name__ == "__main__":
-    n = 4_000
+    n = 10_000
     print(f"""
     Outputs {n} rows of ICD-10 sentences and writes them to {MY_CORPUS}
     
