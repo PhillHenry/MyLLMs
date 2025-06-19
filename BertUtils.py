@@ -1,26 +1,30 @@
 import pandas as pd
+from datasets import Dataset
 from transformers import BertTokenizerFast
 
-from datasets import Dataset
-from BertConfig import MY_VOCAB
-from BertConfig import MY_CORPUS, MY_RESULTS
+from BertConfig import MY_CORPUS, MY_RESULTS, MY_VOCAB
 
 PREFIX = "200_"
 LABEL = "labels"
 TEXT_COL = "SNOMED"
+MODEL_FILE_NAME = f"{MY_VOCAB}/model"
 
 
-def get_data_set() -> pd.DataFrame:
-    results = pd.read_csv(PREFIX + MY_RESULTS, header=None, names=[LABEL])
-    snomeds = pd.read_csv(PREFIX + MY_CORPUS, header=None, names=[TEXT_COL])
-
-    assert len(snomeds) == len(results)
-
-    df = pd.concat([snomeds, results], axis=1)
-    df[LABEL] = df[LABEL].astype(int)
+def get_data_set() -> Dataset:
+    df = get_data_frame()
     print(df[LABEL].value_counts())
     df = Dataset.from_pandas(df)
     return df
+
+
+def get_data_frame() -> pd.DataFrame:
+    results = pd.read_csv(PREFIX + MY_RESULTS, header=None, names=[LABEL])
+    snomeds = pd.read_csv(PREFIX + MY_CORPUS, header=None, names=[TEXT_COL])
+    assert len(snomeds) == len(results)
+    df = pd.concat([snomeds, results], axis=1)
+    df[LABEL] = df[LABEL].astype(int)
+    return df
+
 
 def tokenize_dataset(df: pd.DataFrame, tokenizer: BertTokenizerFast):
     print("Tokenizing....")

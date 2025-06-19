@@ -5,7 +5,7 @@ from transformers import BertTokenizerFast, TrainingArguments, BertForSequenceCl
     Trainer
 
 from BertConfig import bert_config, MY_VOCAB
-from BertUtils import TEXT_COL, tokenize_dataset, get_data_set
+from BertUtils import TEXT_COL, tokenize_dataset, get_data_set, MODEL_FILE_NAME
 
 df = get_data_set()
 
@@ -46,4 +46,4 @@ trainer = Trainer(
 
 trainer.train()
 
-model.save_pretrained(f"{MY_VOCAB}/model")
+model.save_pretrained(MODEL_FILE_NAME)
