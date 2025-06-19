@@ -1,3 +1,4 @@
+import pandas as pd
 from transformers import BertTokenizerFast, BertForSequenceClassification
 
 from transformers import BertTokenizerFast, BertForSequenceClassification
@@ -34,14 +35,33 @@ def make_prediction(texts):
     logits = outputs.logits
     predictions = torch.argmax(logits, dim=-1)
 
-    # Print results
-    for text, pred in zip(texts, predictions):
-        print(f"Text: {text}")
-        print(f"Predicted class: {pred.item()}")
-        print("---")
+    return list(map(lambda x: x.item(), predictions))
 
-diabetes = df[df[LABEL] == 1]
-samples = diabetes[TEXT_COL][:10]
-samples = samples.tolist()
-print(samples)
-make_prediction(samples)
+
+def test_with_label(label: int) -> pd.DataFrame:
+    cohort = df[df[LABEL] == label]
+    samples = cohort[TEXT_COL][:10]
+    samples = samples.tolist()
+    predictions = make_prediction(samples)
+    print(f"Label {label}: accuracy = {len([x for x in predictions if x == label])} / {len(samples)}")
+    return samples
+
+
+def sense_check_sample(sample: [str], expected: int):
+    print(f"Checking {len(sample)} samples have class {expected}")
+    for codes in sample:
+        is_diabetic = False
+        for code in codes.split(" "):
+            if code.startswith("E0"):
+                is_diabetic = True
+        if expected == 1:
+            assert is_diabetic
+        else:
+            assert not is_diabetic
+
+diabetics = test_with_label(1)
+non_diabetics = test_with_label(0)
+
+sense_check_sample(diabetics, 1)
+sense_check_sample(non_diabetics, 0)
+
