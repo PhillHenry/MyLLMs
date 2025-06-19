@@ -45,11 +45,11 @@ def random_codes(codes: {str}) -> Union[str, bool]:
         code = random.choice(codes)
         if is_diabetes(code) and not diabetic:
             diabetic = True
-            N = min(1, len(COMORBIDITIES) / 2)  # Ensure we don't try to pick more than available
+            N = max(1, len(COMORBIDITIES) // 2)  # Ensure we don't try to pick more than available
             k = random.randint(1, N)  # Random number of elements to pick
             random_comorbidities = set(random.sample(COMORBIDITIES, k))
+            line = " ".join(random_comorbidities) + line
             line = f"{code} {line}"
-            line + " ".join(random_comorbidities)
         elif code in COMORBIDITIES and not diabetic:
             line = "E1010 " + line
             diabetic = True
