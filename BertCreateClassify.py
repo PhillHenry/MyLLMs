@@ -5,19 +5,20 @@ from transformers import BertTokenizerFast, TrainingArguments, BertForSequenceCl
     Trainer
 
 from BertConfig import bert_config, MY_VOCAB
-from BertUtils import TEXT_COL, tokenize_dataset, get_data_set, MODEL_FILE_NAME
+from BertUtils import TEXT_COL, tokenize_dataset, get_data_set, MODEL_FILE_NAME, TEST_FILE_NAME, \
+    TRAIN_FILE_NAME
 
-df = get_data_set()
+ds = get_data_set()
 
 print("Training Tokenizer....")
 tokenizer = BertWordPieceTokenizer(clean_text=True)
-tokenizer.train_from_iterator(df[TEXT_COL])
+tokenizer.train_from_iterator(ds[TEXT_COL])
 
 tokenizer.save_model(MY_VOCAB)
 tokenizer.save(f"{MY_VOCAB}/tokenizer.json")
 
 tokenizer = BertTokenizerFast.from_pretrained(MY_VOCAB)
-tokenized_dataset = tokenize_dataset(df, tokenizer)
+tokenized_dataset = tokenize_dataset(ds, tokenizer, remove_columns=[])
 
 config = bert_config(tokenizer)
 config.num_labels = 2
@@ -28,7 +29,7 @@ training_args = TrainingArguments(
     eval_strategy="epoch",
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    num_train_epochs=10,
+    num_train_epochs=1,
     logging_dir='./logs',
     report_to="comet_ml",
 )
@@ -49,3 +50,6 @@ trainer.train()
 model.save_pretrained(MODEL_FILE_NAME)
 
 print(f"Saved {MODEL_FILE_NAME}")
+
+train_ds.save_to_disk(TRAIN_FILE_NAME)
+test_ds.save_to_disk(TEST_FILE_NAME)

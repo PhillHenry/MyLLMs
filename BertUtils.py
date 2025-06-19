@@ -8,6 +8,8 @@ PREFIX = "200_"
 LABEL = "labels"
 TEXT_COL = "SNOMED"
 MODEL_FILE_NAME = f"{MY_VOCAB}/model"
+TEST_FILE_NAME = f"{MY_VOCAB}/test"
+TRAIN_FILE_NAME = f"{MY_VOCAB}/train"
 
 
 def get_data_set() -> Dataset:
@@ -26,7 +28,7 @@ def get_data_frame() -> pd.DataFrame:
     return df
 
 
-def tokenize_dataset(df: pd.DataFrame, tokenizer: BertTokenizerFast):
+def tokenize_dataset(df: Dataset, tokenizer: BertTokenizerFast, remove_columns=[TEXT_COL]):
     print("Tokenizing....")
 
     def tokenize(batch):
@@ -42,6 +44,6 @@ def tokenize_dataset(df: pd.DataFrame, tokenizer: BertTokenizerFast):
 
     tokenized_dataset = df.map(tokenize,
                                batched=True,
-                               remove_columns=[TEXT_COL],
+                               remove_columns=remove_columns,
                                load_from_cache_file=False)
     return tokenized_dataset

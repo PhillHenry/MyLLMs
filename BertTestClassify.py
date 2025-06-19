@@ -1,18 +1,16 @@
 import pandas as pd
-from transformers import BertTokenizerFast, BertForSequenceClassification
-
+from datasets import load_from_disk
 from transformers import BertTokenizerFast, BertForSequenceClassification
 
 from BertConfig import MY_VOCAB
-from BertUtils import tokenize_dataset, get_data_set, get_data_frame, MODEL_FILE_NAME, LABEL, TEXT_COL
+from BertUtils import tokenize_dataset, get_data_set, get_data_frame, MODEL_FILE_NAME, LABEL, \
+    TEXT_COL, TEST_FILE_NAME
 import torch
 
 tokenizer = BertTokenizerFast.from_pretrained(MY_VOCAB)
 tokenized_dataset = tokenize_dataset(get_data_set(), tokenizer)
 model = BertForSequenceClassification.from_pretrained(MODEL_FILE_NAME)
 
-df = get_data_frame()
-print(df)
 
 # Set model to evaluation mode
 model.eval()
@@ -43,8 +41,12 @@ def remove_diabetes(codes: str) -> str:
     return " ".join([code for code in codes if not code.startswith("E0")])
 
 
+df = load_from_disk(TEST_FILE_NAME).to_pandas()
+print(df)
+
 def test_with_label(label: int) -> pd.DataFrame:
     cohort = df[df[LABEL] == label]
+    print(f"Number with label {label} = {cohort.shape[0]} / {len(df)}")
     cohort = cohort.sample(frac=1).reset_index(drop=True)
     samples = cohort[TEXT_COL][:10]
     samples = samples.tolist()
