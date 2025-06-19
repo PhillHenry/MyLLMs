@@ -43,7 +43,6 @@ def remove_diabetes(codes: str) -> str:
 
 print(f"Loading {TEST_FILE_NAME}")
 df = load_from_disk(TEST_FILE_NAME).to_pandas()
-print(df)
 
 def test_with_label(label: int) -> pd.DataFrame:
     cohort = df[df[LABEL] == label]
