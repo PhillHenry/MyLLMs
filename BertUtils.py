@@ -4,7 +4,7 @@ from transformers import BertTokenizerFast
 
 from BertConfig import MY_CORPUS, MY_RESULTS, MY_VOCAB
 
-PREFIX = "200_"
+PREFIX = ""
 LABEL = "labels"
 TEXT_COL = "SNOMED"
 MODEL_FILE_NAME = f"{MY_VOCAB}/model"
@@ -20,7 +20,9 @@ def get_data_set() -> Dataset:
 
 
 def get_data_frame() -> pd.DataFrame:
+    print(f"Loading {PREFIX + MY_RESULTS}")
     results = pd.read_csv(PREFIX + MY_RESULTS, header=None, names=[LABEL])
+    print(f"Loading {PREFIX + MY_CORPUS}")
     snomeds = pd.read_csv(PREFIX + MY_CORPUS, header=None, names=[TEXT_COL])
     assert len(snomeds) == len(results)
     df = pd.concat([snomeds, results], axis=1)

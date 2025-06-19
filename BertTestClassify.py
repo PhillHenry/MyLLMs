@@ -38,9 +38,10 @@ def make_prediction(texts):
 
 def remove_diabetes(codes: str) -> str:
     codes = codes.split(" ")
-    return " ".join([code for code in codes if not code.startswith("E0")])
+    return " ".join([code for code in codes if not (code.startswith("E0") or code.startswith("E1"))])
 
 
+print(f"Loading {TEST_FILE_NAME}")
 df = load_from_disk(TEST_FILE_NAME).to_pandas()
 print(df)
 
@@ -64,12 +65,12 @@ def sense_check_sample(sample: [str], expected: int):
     for codes in sample:
         is_diabetic = False
         for code in codes.split(" "):
-            if code.startswith("E0"):
+            if code.startswith("E0") or code.startswith("E1"):
                 is_diabetic = True
         if expected == 1:
             assert is_diabetic
         else:
-            assert not is_diabetic
+            assert not is_diabetic, codes
 
 diabetics = test_with_label(1)
 non_diabetics = test_with_label(0)

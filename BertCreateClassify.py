@@ -48,8 +48,10 @@ trainer = Trainer(
 trainer.train()
 
 model.save_pretrained(MODEL_FILE_NAME)
-
 print(f"Saved {MODEL_FILE_NAME}")
 
 train_ds.save_to_disk(TRAIN_FILE_NAME)
+print(f"Saved {TRAIN_FILE_NAME}")
+
 test_ds.save_to_disk(TEST_FILE_NAME)
+print(f"Saved {TEST_FILE_NAME}")

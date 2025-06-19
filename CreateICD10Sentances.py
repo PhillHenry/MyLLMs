@@ -44,14 +44,14 @@ def random_codes(codes: {str}) -> Union[str, bool]:
     for i in range(int(random.random() * 20) + 20):
         code = random.choice(codes)
         line += f" {code}"
-        if code.startswith("E0") or code.startswith("E1"):
+        if code.startswith("E0") or code.startswith("E1") and not is_diabetes:
             is_diabetes = True
             N = min(1, len(COMORBIDITIES) / 2)  # Ensure we don't try to pick more than available
             k = random.randint(1, N)  # Random number of elements to pick
             random_comorbidities = set(random.sample(COMORBIDITIES, k))
             line + " ".join(random_comorbidities)
-        if code in COMORBIDITIES:
-            line += " E1010"
+        if code in COMORBIDITIES and not is_diabetes:
+            line = "E1010 " + line
             is_diabetes = True
     return line.strip(), is_diabetes
 
@@ -59,6 +59,7 @@ def random_codes(codes: {str}) -> Union[str, bool]:
 def generate_icd10s(n: int, filename: str):
     codes = codes_from(filename)
     diabetes = np.zeros(n)
+    print(f"Writing {MY_CORPUS}...")
     with open(MY_CORPUS, "w") as f:
         for i in range(n):
             line, is_diabetes = random_codes(codes)
@@ -66,6 +67,7 @@ def generate_icd10s(n: int, filename: str):
                 diabetes[i] = 1
             f.write(f"{line}\n")
     diabetes = pd.DataFrame(diabetes)
+    print(f"Writing {MY_RESULTS}...")
     diabetes.to_csv(MY_RESULTS, index=False, header=False)
 
 
