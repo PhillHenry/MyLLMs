@@ -1,3 +1,4 @@
+import comet_ml
 import pandas as pd
 
 from datasets import Dataset
@@ -10,12 +11,14 @@ PREFIX = "200_"
 LABEL = "labels"
 TEXT_COL = "SNOMED"
 
-snomeds = pd.read_csv(PREFIX + MY_CORPUS, header=None, names=[TEXT_COL])
 results = pd.read_csv(PREFIX + MY_RESULTS, header=None, names=[LABEL])
+snomeds = pd.read_csv(PREFIX + MY_CORPUS, header=None, names=[TEXT_COL])
 
 assert len(snomeds) == len(results)
 
 df = pd.concat([snomeds, results], axis=1)
+df[LABEL] = df[LABEL].astype(int)
+print(df[LABEL].value_counts())
 df = Dataset.from_pandas(df)
 
 print("Training Tokenizer....")
@@ -37,7 +40,7 @@ def tokenize(batch):
 tokenized_dataset = df.map(tokenize, batched=True, remove_columns=[TEXT_COL], load_from_cache_file=False)
 
 config = bert_config(tokenizer)
-config.num_labels = 1
+config.num_labels = 2
 model = BertForSequenceClassification(config)
 
 training_args = TrainingArguments(
